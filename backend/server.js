@@ -16,7 +16,7 @@ app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use(express.json());
 
 // Routes
-app.get('/', (req, res) => res.json({ message: 'MindBridge API is live! 🚀 Please use http://localhost:5173 for the frontend.' }));
+app.get('/', (req, res) => res.json({ message: 'Manobandhu API is live! 🚀 Please use http://localhost:5173 for the frontend.' }));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/mood', require('./routes/mood'));
 app.use('/api/chat', require('./routes/chat'));
@@ -25,7 +25,7 @@ app.use('/api/ngo', require('./routes/ngo'));
 app.use('/api/community', require('./routes/community'));
 
 // Health check
-app.get('/api/health', (req, res) => res.json({ status: 'MindBridge API running ✅' }));
+app.get('/api/health', (req, res) => res.json({ status: 'Manobandhu API running ✅' }));
 
 // Socket.IO for real-time mentor chat
 io.on('connection', (socket) => {
@@ -50,14 +50,15 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('✅ MongoDB connected');
     server.listen(process.env.PORT, () => {
-      console.log(`🚀 MindBridge server running on port ${process.env.PORT}`);
+      console.log(`🚀 Manobandhu server running on port ${process.env.PORT}`);
     });
   })
   .catch((err) => {
     console.error('❌ MongoDB connection error:', err.message);
+    console.error(err);
     console.log('⚠️  Starting server without DB (mock mode)...');
     server.listen(process.env.PORT, () => {
-      console.log(`🚀 MindBridge server running on port ${process.env.PORT} (no DB)`);
+      console.log(`🚀 Manobandhu server running on port ${process.env.PORT} (no DB)`);
     });
   });
 

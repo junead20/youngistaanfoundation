@@ -1,7 +1,7 @@
 {
-  "name": "mindbridge-backend",
+  "name": "Manobandhu-backend",
   "version": "1.0.0",
-  "description": "MindBridge AI Mental Health Platform - Backend API",
+  "description": "Manobandhu AI Mental Health Platform - Backend API",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -12,7 +12,7 @@
     "ai",
     "nodejs"
   ],
-  "author": "MindBridge Team",
+  "author": "Manobandhu Team",
   "license": "ISC",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -23,6 +23,7 @@
     "express-validator": "^7.0.1",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.5.0",
+    "nodemon": "^3.1.14",
     "socket.io": "^4.6.1"
   }
 }

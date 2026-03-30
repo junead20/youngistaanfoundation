@@ -36,7 +36,7 @@ async function getAIResponse(userMessage, context, moodData) {
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
       const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
-      const systemPrompt = `You are MindBridge AI — a compassionate, teen-friendly mental health support assistant. 
+      const systemPrompt = `You are Manobandhu AI — a compassionate, teen-friendly mental health support assistant. 
       You provide emotional support, NOT medical advice. Be warm, empathetic, and non-judgmental.
       Current user mood: ${moodData?.emotion || 'Unknown'}, Stress level: ${moodData?.stressLevel || 'Unknown'}/10.
       Keep responses concise (2-3 sentences max). Use emojis sparingly. Never diagnose.`;
@@ -74,13 +74,13 @@ router.post('/', authMiddleware, async (req, res) => {
     const context = history.reverse();
 
     // Save user message
-    await ChatMessage.create({ userId, role: 'user', content: message }).catch(() => {});
+    await ChatMessage.create({ userId, role: 'user', content: message }).catch(() => { });
 
     // Get AI response
     const { message: aiMessage, isCrisis } = await getAIResponse(message, context, moodData);
 
     // Save AI response
-    await ChatMessage.create({ userId, role: 'assistant', content: aiMessage }).catch(() => {});
+    await ChatMessage.create({ userId, role: 'assistant', content: aiMessage }).catch(() => { });
 
     res.json({ success: true, message: aiMessage, isCrisis });
   } catch (err) {

@@ -15,10 +15,10 @@ const SUGGESTED_QUESTIONS = [
 export default function Chatbot() {
   const { user, moodData } = useApp();
   const [messages, setMessages] = useState([
-    { 
-      role: 'assistant', 
-      content: `Hey there 👋 I'm your MindBridge AI companion. I'm here for you — no judgment, just support. ${moodData ? `I can see you're feeling ${moodData.emotion} today. ` : ''}How are you doing right now?`,
-      timestamp: new Date() 
+    {
+      role: 'assistant',
+      content: `Hey there 👋 I'm your Manobandhu AI companion. I'm here for you — no judgment, just support. ${moodData ? `I can see you're feeling ${moodData.emotion} today. ` : ''}How are you doing right now?`,
+      timestamp: new Date()
     }
   ]);
   const [input, setInput] = useState('');
@@ -39,9 +39,9 @@ export default function Chatbot() {
     setLoading(true);
 
     try {
-      const res = await axios.post('/api/chat', { 
+      const res = await axios.post('/api/chat', {
         message: text,
-        moodData 
+        moodData
       }, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
@@ -60,7 +60,7 @@ export default function Chatbot() {
     <div className="app-layout">
       <Sidebar />
       <main className="main-content" style={{ display: 'flex', flexDirection: 'column', height: '100vh', padding: 0 }}>
-        
+
         {/* Chat Header */}
         <div style={{ padding: '20px 32px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -68,15 +68,15 @@ export default function Chatbot() {
               <Sparkles size={22} color="white" />
             </div>
             <div>
-              <h1 style={{ fontSize: 18, fontWeight: 800 }}>MindBridge AI</h1>
+              <h1 style={{ fontSize: 18, fontWeight: 800 }}>Manobandhu AI</h1>
               <div style={{ fontSize: 12, color: '#10B981', display: 'flex', alignItems: 'center', gap: 4 }}>
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10B981' }} /> Online & Listening
               </div>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 12 }}>
-             <ShieldCheck size={20} color="var(--text-muted)" />
-             <RefreshCw size={20} color="var(--text-muted)" style={{ cursor: 'pointer' }} onClick={() => setMessages([messages[0]])} />
+            <ShieldCheck size={20} color="var(--text-muted)" />
+            <RefreshCw size={20} color="var(--text-muted)" style={{ cursor: 'pointer' }} onClick={() => setMessages([messages[0]])} />
           </div>
         </div>
 
@@ -99,12 +99,12 @@ export default function Chatbot() {
           ))}
           {loading && (
             <div style={{ display: 'flex', gap: 12 }}>
-               <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(124,58,237,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Sparkles size={16} color="var(--purple-light)" className="animate-pulse" />
-               </div>
-               <div className="chat-bubble chat-bubble-ai" style={{ width: 60, display: 'flex', gap: 4, justifyContent: 'center' }}>
-                  <div className="dot-pulse" />
-               </div>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(124,58,237,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Sparkles size={16} color="var(--purple-light)" className="animate-pulse" />
+              </div>
+              <div className="chat-bubble chat-bubble-ai" style={{ width: 60, display: 'flex', gap: 4, justifyContent: 'center' }}>
+                <div className="dot-pulse" />
+              </div>
             </div>
           )}
           {isCrisis && (
@@ -131,16 +131,16 @@ export default function Chatbot() {
         {/* Input Bar */}
         <div style={{ padding: '24px 32px', borderTop: '1px solid var(--border)', background: 'rgba(255,255,255,0.01)' }}>
           <div style={{ position: 'relative', maxWidth: 800, margin: '0 auto' }}>
-            <input 
-              type="text" 
-              placeholder="Message MindBridge AI..." 
+            <input
+              type="text"
+              placeholder="Message Manobandhu AI..."
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSend()}
-              className="input" 
+              className="input"
               style={{ paddingRight: 60, height: 54, borderRadius: 16 }}
             />
-            <button 
+            <button
               onClick={() => handleSend()}
               disabled={!input.trim() || loading}
               style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', width: 40, height: 40, borderRadius: 12, background: 'var(--purple-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', transition: 'all 0.2s', opacity: (input.trim() && !loading) ? 1 : 0.5 }}
@@ -149,7 +149,7 @@ export default function Chatbot() {
             </button>
           </div>
           <p style={{ textAlign: 'center', marginTop: 12, fontSize: 11, color: 'var(--text-muted)' }}>
-            MindBridge AI can make mistakes. Please check important info.
+            Manobandhu AI can make mistakes. Please check important info.
           </p>
         </div>
 

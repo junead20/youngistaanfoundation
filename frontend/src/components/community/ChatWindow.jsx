@@ -23,7 +23,7 @@ export default function ChatWindow({ group, messages, onSendMessage }) {
       <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
         <Smile size={40} />
       </div>
-      <h3>Welcome to MindBridge Community</h3>
+      <h3>Welcome to Manobandhu Community</h3>
       <p>Select a group to start chatting!</p>
     </div>
   );
@@ -42,40 +42,40 @@ export default function ChatWindow({ group, messages, onSendMessage }) {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 16, color: 'var(--text-muted)' }}>
-           <Video size={20} style={{ cursor: 'pointer' }} />
-           <Phone size={20} style={{ cursor: 'pointer' }} />
-           <MoreVertical size={20} style={{ cursor: 'pointer' }} />
+          <Video size={20} style={{ cursor: 'pointer' }} />
+          <Phone size={20} style={{ cursor: 'pointer' }} />
+          <MoreVertical size={20} style={{ cursor: 'pointer' }} />
         </div>
       </div>
 
       {/* Message List */}
       <div ref={scrollRef} style={{ flex: 1, padding: '24px 20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
-         {messages.map((m, i) => (
-           <MessageBubble key={i} message={m} isOwn={m.role === 'user'} />
-         ))}
+        {messages.map((m, i) => (
+          <MessageBubble key={i} message={m} isOwn={m.role === 'user'} />
+        ))}
       </div>
 
       {/* Input Bar */}
       <div style={{ padding: '16px 20px', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 12 }}>
-         <div style={{ display: 'flex', gap: 10, color: 'var(--text-muted)' }}>
-           <Smile size={22} style={{ cursor: 'pointer' }} />
-           <Paperclip size={22} style={{ cursor: 'pointer' }} />
-         </div>
-         <input 
-           type="text" 
-           placeholder="Type a message..." 
-           value={input} 
-           onChange={e => setInput(e.target.value)}
-           onKeyDown={e => e.key === 'Enter' && handleSend()}
-           className="input"
-           style={{ flex: 1, background: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: '10px 16px', border: '1px solid var(--border)' }}
-         />
-         <button 
-           onClick={handleSend}
-           style={{ width: 42, height: 42, borderRadius: '50%', background: 'var(--purple-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }}
-         >
-           <Send size={20} color="white" />
-         </button>
+        <div style={{ display: 'flex', gap: 10, color: 'var(--text-muted)' }}>
+          <Smile size={22} style={{ cursor: 'pointer' }} />
+          <Paperclip size={22} style={{ cursor: 'pointer' }} />
+        </div>
+        <input
+          type="text"
+          placeholder="Type a message..."
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleSend()}
+          className="input"
+          style={{ flex: 1, background: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: '10px 16px', border: '1px solid var(--border)' }}
+        />
+        <button
+          onClick={handleSend}
+          style={{ width: 42, height: 42, borderRadius: '50%', background: 'var(--purple-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }}
+        >
+          <Send size={20} color="white" />
+        </button>
       </div>
     </div>
   );

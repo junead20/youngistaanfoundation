@@ -62,7 +62,7 @@ export default function UserLogin() {
             <Shield size={14} color="#6EE7B7" />
             <span style={{ fontSize: 12, fontWeight: 600, color: '#6EE7B7' }}>100% Anonymous — No Email Required</span>
           </div>
-          <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>Enter MindBridge</h1>
+          <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>Enter Manobandhu</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Your identity stays completely private</p>
         </div>
 

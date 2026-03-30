@@ -32,7 +32,7 @@ export default function Sidebar() {
           <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, var(--purple-primary), var(--teal-primary))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Brain size={20} color="white" />
           </div>
-          <span style={{ fontSize: 18, fontWeight: 800, fontFamily: 'Plus Jakarta Sans' }} className="gradient-text">MindBridge</span>
+          <span style={{ fontSize: 18, fontWeight: 800, fontFamily: 'Plus Jakarta Sans' }} className="gradient-text">Manobandhu</span>
         </div>
         <p style={{ fontSize: 11, color: 'var(--text-muted)', paddingLeft: 42 }}>Empathetic AI Support</p>
       </div>
