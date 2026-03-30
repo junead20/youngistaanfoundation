@@ -1,15 +1,18 @@
-import express from "express";
-import { generateMiloResponse } from "../utils/chatbot.js";
-import Chat from "../models/Chat.js";
+import express from 'express';
+import { generateMiloResponse } from '../utils/chatbot.js';
+import Chat from '../models/Chat.js';
+import { protect } from '../utils/authMiddleware.js';
 
 const router = express.Router();
 
-router.post("/chat", async (req, res) => {
+// @desc    Chat with "Milo" (Gemini Emotional LLM)
+// @route   POST /api/chatbot/chat
+router.post('/chat', async (req, res) => {
   try {
-    const { userId, userName, ageGroup, moodScore, conversation } = req.body;
+    const { userId, ageGroup, moodScore, conversation } = req.body;
     
-    // Generate Milo's response based on the conversation so far
-    const miloReply = generateMiloResponse(moodScore, conversation, ageGroup);
+    // Generate Milo's response (Supports Progressive Trust - Guest or User)
+    const miloReply = await generateMiloResponse(moodScore, conversation, ageGroup);
     
     res.json(miloReply);
   } catch (err) {
@@ -17,16 +20,18 @@ router.post("/chat", async (req, res) => {
   }
 });
 
-router.post("/save", async (req, res) => {
+// @desc    Save chat session (Only for authenticated users)
+// @route   POST /api/chatbot/save
+router.post('/save', protect, async (req, res) => {
   try {
-    const { userId, userName, ageGroup, moodScore, conversation, actionTaken } = req.body;
+    const { ageGroup, moodScore, conversation, actionTaken } = req.body;
     
     const needsChecking = moodScore <= 3;
     
     const chatSession = new Chat({
-      user_id: userId,
-      user_name: userName,
-      age_group: ageGroup,
+      user_id: req.user._id,
+      user_name: req.user.name,
+      age_group: ageGroup || req.user.age_group,
       mood_score: moodScore,
       conversation: conversation,
       action_taken: actionTaken,
@@ -35,9 +40,9 @@ router.post("/save", async (req, res) => {
     
     await chatSession.save();
 
-    // Simulate sending an email to a volunteer if mood is very low
+    // Alert volunteer if mood is critical
     if (needsChecking) {
-      console.log(`\n[URGENT] Email sent to trained volunteer.\nSubject: Check-in needed for user ${userId}\nReason: User reported mood score of ${moodScore}/10.\nAction Required: Connect within 48 hours.\n`);
+      console.log(`\n[URGENT] Alert sent to volunteer for user ${req.user.name}\nReason: Critical mood score reported.\n`);
     }
 
     res.status(201).json({ success: true, id: chatSession._id });
@@ -46,10 +51,11 @@ router.post("/save", async (req, res) => {
   }
 });
 
-// Admin route to get chats
-router.get("/history", async (req, res) => {
+// @desc    Get user's chat history
+// @route   GET /api/chatbot/history
+router.get('/history', protect, async (req, res) => {
   try {
-    const chats = await Chat.find().sort('-timestamp');
+    const chats = await Chat.find({ user_id: req.user._id }).sort('-timestamp');
     res.json(chats);
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -1,37 +1,49 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Layout from './components/Layout';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Landing from './pages/Landing';
-import Dashboard from './pages/Dashboard';
-import ChildrenDashboard from './pages/ChildrenDashboard';
-import TeenDashboard from './pages/TeenDashboard';
-import Chatbot from './pages/Chatbot';
-import Milo from './pages/Milo';
-import Communities from './pages/Communities';
+import MoodCheck from './pages/MoodCheck';
 import Activities from './pages/Activities';
-import VolunteerPortal from './pages/VolunteerPortal';
-import Programs from './pages/Programs';
-import GeographicInsights from './pages/GeographicInsights';
-import ImpactReport from './pages/ImpactReport';
-import EarlyDetection from './pages/EarlyDetection';
+import UserLogin from './pages/UserLogin';
+import UserSignup from './pages/UserSignup';
+import VolunteerLogin from './pages/VolunteerLogin';
+import VolunteerSignup from './pages/VolunteerSignup';
+import UserDashboard from './pages/UserDashboard';
+import VolunteerDashboard from './pages/VolunteerDashboard';
+import UserDetailView from './pages/UserDetailView';
+import Communities from './pages/Communities';
+import Milo from './pages/Milo';
+import Layout from './components/Layout';
 import './index.css';
+
+const ProtectedRoute = ({ children, role = 'user' }) => {
+  const isAuth = localStorage.getItem('token');
+  const userRole = localStorage.getItem('role');
+  if (!isAuth) return <Navigate to={role === 'volunteer' ? '/volunteer/login' : '/login'} replace />;
+  if (role === 'volunteer' && userRole !== 'volunteer') return <Navigate to="/dashboard/user" replace />;
+  return children;
+};
 
 function App() {
   return (
     <Router>
       <Routes>
+        {/* PUBLIC — no login needed */}
         <Route path="/" element={<Landing />} />
+        <Route path="/mood-check" element={<MoodCheck />} />
+        <Route path="/activities" element={<Activities />} />
+
+        {/* AUTH PAGES */}
+        <Route path="/login" element={<UserLogin />} />
+        <Route path="/signup" element={<UserSignup />} />
+        <Route path="/volunteer/login" element={<VolunteerLogin />} />
+        <Route path="/volunteer/signup" element={<VolunteerSignup />} />
+
+        {/* PROTECTED — login required */}
         <Route element={<Layout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/dashboard/children" element={<ChildrenDashboard />} />
-          <Route path="/dashboard/teens" element={<TeenDashboard />} />
-          <Route path="/milo" element={<Milo />} />
-          <Route path="/communities" element={<Communities />} />
-          <Route path="/activities" element={<Activities />} />
-          <Route path="/volunteer" element={<VolunteerPortal />} />
-          <Route path="/programs" element={<Programs />} />
-          <Route path="/geographic" element={<GeographicInsights />} />
-          <Route path="/impact" element={<ImpactReport />} />
-          <Route path="/early-detection" element={<EarlyDetection />} />
+          <Route path="/dashboard/user" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
+          <Route path="/communities" element={<ProtectedRoute><Communities /></ProtectedRoute>} />
+          <Route path="/milo" element={<ProtectedRoute><Milo /></ProtectedRoute>} />
+          <Route path="/dashboard/volunteer" element={<ProtectedRoute role="volunteer"><VolunteerDashboard /></ProtectedRoute>} />
+          <Route path="/dashboard/volunteer/user/:id" element={<ProtectedRoute role="volunteer"><UserDetailView /></ProtectedRoute>} />
         </Route>
       </Routes>
     </Router>

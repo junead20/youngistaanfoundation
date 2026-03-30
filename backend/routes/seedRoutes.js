@@ -27,11 +27,26 @@ router.post("/", async (req, res) => {
     await Workshop.insertMany(workshops);
 
     const activities = [
-      { title: "Box Breathing", description: "Breathe in 4s, hold 4s, out 4s, hold 4s.", category: "Mindful", type: "Self-Time", duration: "5 mins" },
-      { title: "Scribble IT Out", description: "Grab a pencil and just scribble hard on paper to release energy.", category: "Creative", type: "Self-Time", duration: "10 mins" },
-      { title: "Trust Walk", description: "One person is blindfolded, the other guides them safely.", category: "Social", type: "Interactive", duration: "15 mins" },
-      { title: "Pass the Clap", description: "Stand in a circle and pass a clap rhythm as fast as possible.", category: "Physical", type: "Interactive", duration: "10 mins" },
-      { title: "Write a Letter to Your Future Self", description: "Write down what you hope for yourself in 5 years.", category: "Mindful", type: "Self-Time", duration: "15 mins" }
+      { title: "The 5-4-3-2-1 Grounding", description: "Identify 5 things you see, 4 you feel, 3 you hear, 2 you smell, 1 you taste.", category: "Mindful", type: "Self-Time", duration: "5 mins" },
+      { title: "Doodle Your Stress", description: "Grab a pencil and just scribble or draw whatever is in your head for 2 minutes.", category: "Creative", type: "Self-Time", duration: "10 mins" },
+      { title: "Cloud Watching", description: "Spend 5 minutes looking at the sky (real or digital) and finding shapes.", category: "Mindful", type: "Self-Time", duration: "5 mins" },
+      { title: "Gratitude Text", description: "Send a 'thank you' or 'thinking of you' text to one person right now.", category: "Social", type: "Interactive", duration: "2 mins" },
+      { title: "Desk Yoga", description: "3 simple stretches you can do while sitting to release neck and shoulder tension.", category: "Physical", type: "Self-Time", duration: "5 mins" },
+      { title: "The Humming Trick", description: "Hum your favorite tune to calm your nervous system and release tension.", category: "Mindful", type: "Self-Time", duration: "3 mins" },
+      { title: "Color Breathing", description: "Imagine breathing in blue (calm) and exhaling red (stress).", category: "Mindful", type: "Self-Time", duration: "5 mins" },
+      { title: "Digital Detox", description: "Put your phone away and stay offline for exactly 10 minutes.", category: "Mindful", type: "Self-Time", duration: "10 mins" },
+      { title: "One-Song Dance", description: "Put on one upbeat song and just move your body however you feel.", category: "Physical", type: "Self-Time", duration: "4 mins" },
+      { title: "Nature Soundscapes", description: "Listen to 2 minutes of rain, ocean waves, or forest sounds.", category: "Mindful", type: "Self-Time", duration: "3 mins" },
+      { title: "The 'Why' Game", description: "Ask yourself 'why am I awesome?' and find 3 genuine reasons.", category: "Mindful", type: "Self-Time", duration: "3 mins" },
+      { title: "Plant Care", description: "Spend 2 minutes watering or checking on a plant near you.", category: "Physical", type: "Self-Time", duration: "2 mins" },
+      { title: "Letter to Future Me", description: "Write 2 short sentences for yourself exactly 1 year from today.", category: "Mindful", type: "Self-Time", duration: "10 mins" },
+      { title: "Safe Space Visualization", description: "Close your eyes and imagine a place where you feel 100% safe.", category: "Mindful", type: "Self-Time", duration: "5 mins" },
+      { title: "Texture Search", description: "Find something fuzzy, something smooth, and something cold in your room.", category: "Physical", type: "Self-Time", duration: "3 mins" },
+      { title: "Mantra Creation", description: "Pick 3 words that make you feel strong (e.g., 'I am capable').", category: "Mindful", type: "Self-Time", duration: "3 mins" },
+      { title: "Puzzle Break", description: "Solve one quick riddle, crossword, or word search puzzle.", category: "Creative", type: "Self-Time", duration: "10 mins" },
+      { title: "Hydration Check", description: "Drink a full glass of water slowly, focusing on the feeling.", category: "Physical", type: "Self-Time", duration: "2 mins" },
+      { title: "Deep Sigh", description: "Take a deep breath and exhale with a loud 'ahhh' or 'sigh'.", category: "Mindful", type: "Self-Time", duration: "1 min" },
+      { title: "Self-High Five", description: "Literally give yourself a high five or a pat on the back for being you.", category: "Social", type: "Self-Time", duration: "1 min" }
     ];
     await Activity.insertMany(activities);
 
@@ -39,7 +54,7 @@ router.post("/", async (req, res) => {
       { name: "Art & Crafts Club 🎨", description: "For anyone who loves making things with their hands. Share your creations!", member_count: 142, tags: ["art", "painting", "DIY"] },
       { name: "Music & Singing Vibe 🎵", description: "Drop your favorite playlists, sing covers, or just listen together.", member_count: 310, tags: ["music", "singing", "bands"] },
       { name: "Code Jam Space 💻", description: "Building apps, games, or just learning HTML? Join us.", member_count: 85, tags: ["tech", "coding", "games"] },
-      { name: "Story Writers ✨", description: "Share your poems, short stories, or just random midnight thoughts.", member_count: 198, tags: ["writing", "poetry", "books"] }
+      { name: "Midnight Thoughts ✨", description: "Share your poems, short stories, or just random midnight thoughts.", member_count: 198, tags: ["writing", "poetry", "books"] }
     ];
     await Community.insertMany(communities);
 

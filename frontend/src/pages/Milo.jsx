@@ -1,248 +1,181 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RotateCcw, Heart, Calendar } from 'lucide-react';
-import { chatWithMilo, saveMiloChat } from '../services/api';
+import { Send, MessageCircle, ShieldCheck, LogIn, ChevronRight, User, RotateCcw, Heart, Smile } from 'lucide-react';
 
 export default function Milo() {
-  const [ageGroup, setAgeGroup] = useState(null);
-  const [moodScore, setMoodScore] = useState(null);
+  const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [inputText, setInputText] = useState('');
+  const [interactionCount, setInteractionCount] = useState(0);
+  const [step, setStep] = useState(3); // 3: Chat, 4: Soft Login, 5: Escalation
   const messagesEndRef = useRef(null);
 
-  // Auto-scroll
+  const isGuest = !localStorage.getItem('token');
+  const anonId = "anon_" + Math.random().toString(36).substr(2, 6);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, options]);
+  }, [messages, options, loading]);
 
-  const addBotMessage = async (text, delay = 600) => {
-    setLoading(true);
-    await new Promise(r => setTimeout(r, delay));
-    setMessages(prev => [...prev, { text, isBot: true }]);
-    setLoading(false);
-  };
+  useEffect(() => {
+    // Initial greeting
+    setMessages([{ text: "Hey! I'm Milo. I'm here to listen. How's it going?", isBot: true }]);
+    setOptions(["I'm feeling better", "Still a bit heavy", "What can we do?"]);
+  }, []);
 
-  const startInteraction = async (ag, mood) => {
-    setAgeGroup(ag);
-    setMoodScore(mood);
-    setMessages([]);
+  const handleSend = async (text) => {
+    if (!text && !inputText) return;
+    const msg = text || inputText;
     
-    // Initial user rating "message" silently recorded for backend context
-    const convoContext = [{ is_milo: false, text: `[Milo started. Mood rated: ${mood}/10]` }];
-    
+    setMessages(prev => [...prev, { text: msg, isBot: false }]);
+    setInputText('');
+    setInteractionCount(prev => prev + 1);
     setLoading(true);
+
+    // SOFT LOGIN TRIGGER (Screen 4)
+    if (isGuest && interactionCount + 1 === 3) {
+      setTimeout(() => setStep(4), 1500);
+    }
+
     try {
-      // Backend handles "first message" logic
-      const reply = await chatWithMilo({ 
-        ageGroup: ag, 
-        moodScore: mood, 
-        conversation: convoContext 
+      const res = await fetch('/api/chatbot/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          conversation: messages.concat({ text: msg, isBot: false }).map(m => ({ is_milo: m.isBot, text: m.text })),
+          moodScore: 5 // Default for chat session
+        })
       });
-      
-      setMessages([{ text: reply.text, isBot: true, isAction: !!reply.action }]);
-      if (reply.options) setOptions(reply.options);
-      
-      // Save state to be passed back on next turn
-      if (reply.action) {
-        saveChatToDb(convoContext, reply);
-      }
+      const data = await res.json();
+      setMessages(prev => [...prev, { text: data.text, isBot: true }]);
+      setOptions(data.options || []);
     } catch (err) {
       console.error(err);
-      await addBotMessage("Oops, my brain disconnected for a second. Try again?");
     }
     setLoading(false);
   };
 
-  const saveChatToDb = async (convoArray, finalReply) => {
-    try {
-      await saveMiloChat({
-        userId: "anon_" + Math.random().toString(36).substr(2, 9),
-        ageGroup,
-        moodScore,
-        conversation: [...convoArray, { is_milo: true, text: finalReply.text }],
-        actionTaken: finalReply.action
-      });
-    } catch (err) {
-      console.error("Failed to save chat context", err);
-    }
-  };
-
-  const handleOptionClick = async (optionText) => {
-    setOptions([]); // hide immediately
-    setMessages(prev => [...prev, { text: optionText, isBot: false }]);
-    
-    const currentConvo = messages.map(m => ({ is_milo: m.isBot, text: m.text }));
-    currentConvo.push({ is_milo: false, text: optionText });
-
-    setLoading(true);
-    try {
-      const reply = await chatWithMilo({ 
-        ageGroup, 
-        moodScore, 
-        conversation: currentConvo 
-      });
-      
-      setMessages(prev => [...prev, { text: reply.text, isBot: true, isAction: !!reply.action }]);
-      if (reply.options) {
-        setOptions(reply.options);
-      }
-      
-      if (reply.action) {
-        saveChatToDb(currentConvo, reply);
-      }
-    } catch (err) {
-      console.error(err);
-      await addBotMessage("I didn't quite catch that. Can you try again?");
-    }
-    setLoading(false);
-  };
-
-  const reset = () => {
-    setAgeGroup(null);
-    setMoodScore(null);
-    setMessages([]);
-    setOptions([]);
-  };
-
-  // Select Age and Initial Mood
-  if (!ageGroup || !moodScore) {
+  // Screen 4: Soft Login Prompt
+  if (step === 4) {
     return (
-      <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="card" style={{ maxWidth: 500, width: '100%', textAlign: 'center', padding: '48px 32px' }}>
-          <div style={{ fontSize: 64, marginBottom: 16 }}>🧸</div>
-          <h1 style={{ fontFamily: 'Outfit, sans-serif', marginBottom: 8, fontSize: 32 }}>
-            Hey, I'm Milo.
-          </h1>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: 32, fontSize: 16, lineHeight: 1.5 }}>
-            I'm here to listen. No judgment, no quick fixes, just a space for you.
+      <div className="flex-center h-screen bg-vibrant">
+
+        <div className="card" style={{ maxWidth: 450, padding: 40, textAlign: 'center', border: '1px solid var(--border-active)' }}>
+          <Smile size={48} color="var(--palette-purple)" style={{ marginBottom: 20 }} />
+          <h2 style={{ marginBottom: 12 }}>Enjoying our chat?</h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 32 }}>
+            Save your progress now to continue this conversation anytime and track your mood journey.
           </p>
-          
-          <div style={{ background: 'var(--bg-glass)', padding: 24, borderRadius: 16, border: '1px solid var(--border)' }}>
-            {!ageGroup ? (
-              <>
-                <p style={{ fontWeight: 600, marginBottom: 16 }}>What age group are you?</p>
-                <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-                  <button className="btn btn-secondary w-full" onClick={() => setAgeGroup("11-14")}>11-14</button>
-                  <button className="btn btn-secondary w-full" onClick={() => setAgeGroup("15-19")}>15-19</button>
-                </div>
-              </>
-            ) : (
-              <>
-                <p style={{ fontWeight: 600, marginBottom: 16 }}>How are you feeling right now?</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 8px' }}>
-                    <span style={{ fontSize: 24 }}>😞</span>
-                    <span style={{ fontSize: 24 }}>😐</span>
-                    <span style={{ fontSize: 24 }}>🙂</span>
-                    <span style={{ fontSize: 24 }}>🌟</span>
-                  </div>
-                  <input 
-                    type="range" 
-                    min="1" max="10" 
-                    defaultValue="5"
-                    onChange={(e) => setMoodScore(parseInt(e.target.value))}
-                    style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--primary)' }}
-                  />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--text-tertiary)' }}>
-                    <span>1 (Struggling)</span>
-                    <span>10 (Awesome)</span>
-                  </div>
-                  <button className="btn btn-primary w-full" onClick={() => startInteraction(ageGroup, moodScore || 5)}>
-                    Start Talking
-                  </button>
-                </div>
-              </>
-            )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <button className="btn btn-primary btn-lg" onClick={() => navigate('/login')}>
+              Create Account <LogIn size={18} style={{ marginLeft: 8 }} />
+            </button>
+            <button className="btn btn-secondary" onClick={() => setStep(3)}>
+              Continue Anonymously
+            </button>
           </div>
+          <p style={{ marginTop: 24, fontSize: 11, color: 'var(--text-tertiary)' }}>
+            <RotateCcw size={10} style={{ marginRight: 4 }} /> Identity is optional for now. You're in control.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Screen 5: Escalation Prompt
+  if (step === 5) {
+    return (
+      <div className="flex-center h-screen bg-vibrant">
+
+        <div className="card" style={{ maxWidth: 450, padding: 40, textAlign: 'center', border: '1px solid var(--palette-pink)' }}>
+           <Heart size={48} color="var(--palette-pink)" style={{ marginBottom: 20 }} fill="var(--palette-pink)" />
+           <h2 style={{ marginBottom: 12 }}>Need a Human Connection?</h2>
+           <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 32 }}>
+              Would you like to connect with a trained Youngistaan volunteer for real-time support? 
+              This requires a verified account for your safety.
+           </p>
+           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+             <button className="btn btn-primary btn-lg" onClick={() => navigate('/login')}>
+                Verify & Talk to Volunteer <ArrowRight size={18} style={{ marginLeft: 8 }} />
+             </button>
+             <button className="btn btn-secondary" onClick={() => setStep(3)}>
+                Stay with Milo (AI)
+             </button>
+           </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="animate-fade-in" style={{ height: 'calc(100vh - 120px)', display: 'flex', flexDirection: 'column' }}>
-      <div className="page-header" style={{ flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+    <div className="chatbot-container animate-fade-in" style={{ height: '85vh', position: 'relative' }}>
+
+      
+      <div className="chatbot-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{ fontSize: 40 }}>🧸</div>
-          <div>
-            <h1 style={{ fontSize: 24, margin: 0 }}>Milo</h1>
-            <p style={{ margin: 0, color: 'var(--text-tertiary)', fontSize: 13 }}>Always here to listen.</p>
-          </div>
+           <div style={{ fontSize: 32 }}>🧸</div>
+           <div>
+              <h1 style={{ fontSize: 20, margin: 0 }}>Milo Companion</h1>
+              <div style={{ fontSize: 11, color: 'var(--palette-pink)', fontWeight: 600 }}>SESSION_ID: {anonId}</div>
+           </div>
         </div>
-        <button className="btn btn-secondary btn-sm" onClick={reset}>
-          <RotateCcw size={14} /> End Chat
+        <button className="btn btn-secondary btn-sm" onClick={() => setStep(5)}>
+           Talk to Volunteer
         </button>
       </div>
 
-      <div className="card" style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 20, overflow: 'hidden' }}>
-        
-        {/* Messages */}
-        <div className="chatbot-messages" style={{ flex: 1, overflowY: 'auto', paddingRight: 10, display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <AnimatePresence>
-            {messages.map((msg, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`chat-message ${msg.isBot ? 'bot' : 'user'}`}
-                style={{ alignSelf: msg.isBot ? 'flex-start' : 'flex-end', display: 'flex', gap: 12, maxWidth: '85%' }}
-              >
-                {msg.isBot && <div style={{ fontSize: 24 }}>🧸</div>}
-                <div style={{ 
-                  background: msg.isBot ? 'var(--bg-glass)' : 'var(--primary)',
-                  border: msg.isBot ? '1px solid var(--border)' : 'none',
-                  padding: '12px 16px',
-                  borderRadius: 20,
-                  borderTopLeftRadius: msg.isBot ? 4 : 20,
-                  borderTopRightRadius: !msg.isBot ? 4 : 20,
-                  fontSize: 15,
-                  lineHeight: 1.5,
-                  color: msg.isBot ? 'var(--text-primary)' : '#fff'
-                }}>
-                  {msg.text}
-                </div>
-              </motion.div>
+      <div className="card" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', marginTop: 20 }}>
+         <div style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {messages.map((m, i) => (
+               <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  style={{
+                     alignSelf: m.isBot ? 'flex-start' : 'flex-end',
+                     maxWidth: '80%',
+                     background: m.isBot ? 'var(--bg-tertiary)' : 'var(--primary)',
+                     padding: '12px 16px',
+                     borderRadius: 20,
+                     fontSize: 15,
+                     color: m.isBot ? 'var(--text-primary)' : '#fff',
+                     border: m.isBot ? '1px solid var(--border)' : 'none'
+                  }}
+               >
+                  {m.text}
+               </motion.div>
             ))}
-            
-            {loading && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', gap: 12, alignSelf: 'flex-start' }}>
-                <div style={{ fontSize: 24 }}>🧸</div>
-                <div style={{ padding: '12px 16px', background: 'var(--bg-glass)', borderRadius: 20, display: 'flex', gap: 4, alignItems: 'center' }}>
-                  <div className="typing-dot" style={{ width: 6, height: 6, background: 'var(--text-tertiary)', borderRadius: '50%', animation: 'bounce 1.4s infinite ease-in-out both', animationDelay: '-0.32s' }} />
-                  <div className="typing-dot" style={{ width: 6, height: 6, background: 'var(--text-tertiary)', borderRadius: '50%', animation: 'bounce 1.4s infinite ease-in-out both', animationDelay: '-0.16s' }} />
-                  <div className="typing-dot" style={{ width: 6, height: 6, background: 'var(--text-tertiary)', borderRadius: '50%', animation: 'bounce 1.4s infinite ease-in-out both' }} />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          <div ref={messagesEndRef} />
-        </div>
+            {loading && <div className="loading-spinner-sm" style={{ alignSelf: 'flex-start' }} />}
+            <div ref={messagesEndRef} />
+         </div>
 
-        {/* Options */}
-        {options.length > 0 && !loading && (
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-            style={{ marginTop: 20, display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'flex-end' }}
-          >
-            {options.map((opt, i) => (
-              <button 
-                key={i} 
-                className="chat-option-btn"
-                onClick={() => handleOptionClick(opt)}
-                style={{ 
-                  background: 'transparent', border: '1px solid var(--primary)', 
-                  color: 'var(--primary-light)', padding: '10px 16px', borderRadius: 20,
-                  fontSize: 14, cursor: 'pointer', transition: 'all 0.2s'
-                }}
-                onMouseOver={(e) => e.target.style.background = 'rgba(108, 92, 231, 0.1)'}
-                onMouseOut={(e) => e.target.style.background = 'transparent'}
-              >
-                {opt}
-              </button>
-            ))}
-          </motion.div>
-        )}
+         <div style={{ padding: 20, borderTop: '1px solid var(--border)' }}>
+            {options.length > 0 && (
+               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16, justifyContent: 'flex-end' }}>
+                  {options.map((opt, i) => (
+                     <button key={i} className="chip-btn" onClick={() => handleSend(opt)}>{opt}</button>
+                  ))}
+               </div>
+            )}
+            <div style={{ display: 'flex', gap: 12 }}>
+               <input 
+                  className="form-input" 
+                  placeholder="Type your message..." 
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+               />
+               <button className="btn btn-primary" onClick={() => handleSend()}>
+                  <Send size={18} />
+               </button>
+            </div>
+            <div style={{ marginTop: 12, textAlign: 'center', fontSize: 11, color: 'var(--text-tertiary)' }}>
+               <ShieldCheck size={10} style={{ marginRight: 4 }} /> Anonymous session active. Milo generates anonymous_user_id in background.
+            </div>
+         </div>
       </div>
     </div>
   );

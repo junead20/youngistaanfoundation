@@ -1,213 +1,138 @@
+import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import {
-  LayoutDashboard, MessageCircle, Users, MapPin,
-  TrendingUp, Shield, ArrowRight, Sparkles,
-  Heart, Brain, BarChart3, Globe
-} from 'lucide-react';
-
-const features = [
-  {
-    icon: <LayoutDashboard size={24} />,
-    title: 'Age-Segmented Dashboards',
-    desc: 'Separate wellbeing dashboards for Children (6-12) and Teens (13-19) with tailored metrics.'
-  },
-  {
-    icon: <MessageCircle size={24} />,
-    title: 'Milo Companion',
-    desc: 'Friendly, non-judgmental companion that listens first and offers 1 small thing to try.'
-  },
-  {
-    icon: <Shield size={24} />,
-    title: 'Wellbeing Journey',
-    desc: 'Understand how youth are doing over time through anonymous check-ins.'
-  },
-  {
-    icon: <Users size={24} />,
-    title: 'Volunteer Intelligence',
-    desc: 'Convert volunteer observations into structured behavioral risk indicators instantly.'
-  },
-  {
-    icon: <Brain size={24} />,
-    title: 'Smart Insights Engine',
-    desc: 'AI-powered insights correlating mood with learning engagement across programs.'
-  },
-  {
-    icon: <MapPin size={24} />,
-    title: 'Geographic Analytics',
-    desc: 'Compare wellbeing data across Hyderabad, Bangalore, Delhi, Mumbai, and Chennai.'
-  },
-  {
-    icon: <TrendingUp size={24} />,
-    title: 'Impact Measurement',
-    desc: 'Before vs after workshop metrics proving measurable impact for donors.'
-  },
-  {
-    icon: <Heart size={24} />,
-    title: 'Communities & Activities',
-    desc: 'Connect teens with shared interests and provide quick, engaging self-care activities.'
-  },
-  {
-    icon: <BarChart3 size={24} />,
-    title: 'Offline Session Sync',
-    desc: 'Volunteers seamlessly transition offline session activities into digital insights.'
-  },
-];
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: (i) => ({
-    opacity: 1, y: 0,
-    transition: { delay: i * 0.08, duration: 0.5, ease: 'easeOut' }
-  })
-};
+import { Heart, ArrowRight, ShieldCheck, HelpCircle, Info, Umbrella, Users, Star, Sparkles } from 'lucide-react';
 
 export default function Landing() {
   const navigate = useNavigate();
+  const infoRef = useRef(null);
+
+  const scrollToInfo = () => {
+    infoRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
-    <div className="landing">
-      {/* Nav */}
-      <nav className="landing-nav">
-        <div className="landing-nav-logo">
-          <div className="landing-nav-logo-icon">💚</div>
-          <h3>YuvaPulse</h3>
+    <div className="landing-container" style={{ position: 'relative', overflowX: 'hidden' }}>
+      <nav className="nav-v2">
+        <div className="nav-logo">
+          <Heart size={32} fill="var(--primary)" color="var(--primary)" />
+          <span>YuvaPulse</span>
         </div>
-        <div style={{ display: 'flex', gap: 12 }}>
-          <button className="btn btn-secondary btn-sm" onClick={() => navigate('/milo')}>
-            <MessageCircle size={14} /> Talk to Milo
-          </button>
-          <button className="btn btn-primary btn-sm" onClick={() => navigate('/dashboard')}>
-            <LayoutDashboard size={14} /> Admin / Volunteer View
+        <div className="nav-links">
+          <button className="nav-link" onClick={scrollToInfo}>About</button>
+          <button className="nav-link" onClick={() => navigate('/activities')}>Fun Activities</button>
+          <button className="btn btn-secondary btn-sm" onClick={() => navigate('/volunteer/login')}>
+            Volunteer Portal
           </button>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="landing-hero">
+      {/* HERO */}
+      <section className="hero-v2">
         <motion.div
-          className="landing-hero-content"
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
+           initial={{ opacity: 0, y: 30 }}
+           whileInView={{ opacity: 1, y: 0 }}
+           transition={{ duration: 0.8 }}
+           viewport={{ once: true }}
         >
-          <div className="landing-badge">
-            <Sparkles size={14} />
-            Designed for Youngistaan Foundation
+          <div className="hero-badge">
+            <ShieldCheck size={14} />
+            <span>100% Anonymous First-Touch</span>
           </div>
-          <h1>Youth Wellbeing Intelligence Dashboard</h1>
-          <p>
-            A mental health intelligence platform that converts volunteer observations
-            and youth interactions into real-time, actionable insights across all
-            Youngistaan programs.
+          
+          <h1 className="hero-headline">
+            A Safe Space to Express <br /> How You Feel
+          </h1>
+          
+          <p className="hero-subtext" style={{ maxWidth: 700, margin: '0 auto 48px' }}>
+            A mental wellbeing companion for children and teens. No judgment. No pressure. 
+            Just a space to be you, starting with how you feel today.
           </p>
-          <div className="landing-buttons">
-            <button className="btn btn-primary btn-lg" onClick={() => navigate('/dashboard')}>
-              Open Dashboard <ArrowRight size={18} />
+
+          <div className="hero-actions">
+            <button className="btn btn-primary btn-lg" onClick={() => navigate('/mood-check')}>
+              Start with how you feel <ArrowRight size={20} style={{ marginLeft: 12 }} />
             </button>
-            <button className="btn btn-secondary btn-lg" onClick={() => navigate('/milo')}>
-              <MessageCircle size={18} /> Meet Milo
+            <button className="btn btn-secondary btn-lg" style={{ border: 'none' }} onClick={scrollToInfo}>
+              <HelpCircle size={18} style={{ marginRight: 8 }} /> Learn more
             </button>
+          </div>
+
+          <div style={{ marginTop: 40 }}>
+            <button className="btn btn-secondary btn-lg" onClick={() => navigate('/activities')}>
+              <Sparkles size={18} style={{ marginRight: 8 }} /> Explore Fun Activities
+            </button>
+          </div>
+
+          <div style={{ marginTop: 48, opacity: 0.6, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 32 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><ShieldCheck size={14} /> No login required</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Umbrella size={14} /> Private session</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Users size={14} /> 14K+ Volunteers</span>
           </div>
         </motion.div>
       </section>
 
-      {/* Stats */}
-      <section className="landing-stats">
-        <div className="landing-stats-grid">
-          {[
-            { value: '50K+', label: 'Volunteers' },
-            { value: '3', label: 'Programs' },
-            { value: '5', label: 'Cities' },
-            { value: '24/7', label: 'Monitoring' },
-          ].map((s, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
+      {/* INFO SECTIONS */}
+      <div ref={infoRef} className="landing-content" style={{ padding: '80px 0' }}>
+        <div className="container">
+          <div className="volunteer-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 40 }}>
+            <motion.div 
+               className="card"
+               initial={{ opacity: 0, x: -20 }}
+               whileInView={{ opacity: 1, x: 0 }}
+               viewport={{ once: true }}
             >
-              <div className="landing-stat-value">{s.value}</div>
-              <div className="landing-stat-label">{s.label}</div>
+              <h3 className="card-title" style={{ marginBottom: 20 }}>
+                <Info size={24} style={{ marginRight: 12, verticalAlign: 'middle' }} /> About Youngistaan
+              </h3>
+              <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+                Youngistaan Foundation is a 14,000+ volunteer-led NGO in India, committed to creating 
+                sustainable change. YuvaPulse is our dedicated safe-space platform, bringing mental 
+                health support and wellbeing intelligence directly to those who need it most.
+              </p>
             </motion.div>
-          ))}
-        </div>
-      </section>
 
-      {/* Features */}
-      <section className="landing-features">
-        <h2>Powerful Features for Youth Wellbeing</h2>
-        <p>Everything you need to track, analyze, and improve youth mental health across programs</p>
-        <div className="features-grid">
-          {features.map((f, i) => (
-            <motion.div
-              key={i}
-              className="feature-card"
-              custom={i}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeUp}
+            <motion.div 
+               className="card"
+               initial={{ opacity: 0, x: 20 }}
+               whileInView={{ opacity: 1, x: 0 }}
+               viewport={{ once: true }}
             >
-              <div className="feature-icon">{f.icon}</div>
-              <h3>{f.title}</h3>
-              <p>{f.desc}</p>
+              <h3 className="card-title" style={{ marginBottom: 20 }}>
+                <Star size={24} style={{ marginRight: 12, verticalAlign: 'middle' }} /> Wellbeing Journey
+              </h3>
+              <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+                Mental health isn't a destination; it's a process. At YuvaPulse, we replace clinical 
+                jargon like "therapy" with "feeling low?" or "need to talk?". We believe that teens 
+                don't reject help—they reject how help is delivered.
+              </p>
             </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* Flow diagram */}
-      <section className="landing-stats" style={{ background: 'var(--bg-primary)' }}>
-        <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
-          <h2 style={{ fontSize: 32, marginBottom: 16, fontFamily: 'Outfit, sans-serif' }}>How It Works</h2>
-          <p style={{ color: 'var(--text-tertiary)', marginBottom: 40, fontSize: 16 }}>
-            From data collection to actionable insights in real-time
-          </p>
-          <div style={{
-            display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 20, flexWrap: 'wrap'
-          }}>
-            {[
-              { icon: <Users size={24} />, label: 'Volunteers Observe' },
-              { icon: <ArrowRight size={20} />, label: '' },
-              { icon: <Globe size={24} />, label: 'Data Collected' },
-              { icon: <ArrowRight size={20} />, label: '' },
-              { icon: <Brain size={24} />, label: 'AI Analysis' },
-              { icon: <ArrowRight size={20} />, label: '' },
-              { icon: <BarChart3 size={24} />, label: 'NGO Action' },
-            ].map((step, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                  ...(step.label ? {
-                    padding: '20px 24px', background: 'var(--bg-card)',
-                    borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)',
-                    minWidth: 130
-                  } : { color: 'var(--text-tertiary)' })
-                }}
-              >
-                {step.icon}
-                {step.label && <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>{step.label}</span>}
-              </motion.div>
-            ))}
           </div>
-        </div>
-      </section>
 
-      {/* CTA */}
-      <section className="landing-cta">
-        <h2>Ready to Transform Youth Wellbeing?</h2>
-        <p>Start tracking, analyzing, and improving outcomes today.</p>
-        <button className="btn btn-primary btn-lg" onClick={() => navigate('/dashboard')}>
-          Get Started <ArrowRight size={18} />
-        </button>
-      </section>
+          <motion.div 
+             className="card" 
+             style={{ marginTop: 40, textAlign: 'center', background: 'var(--bg-glass)', border: '1px solid var(--border-active)' }}
+             initial={{ opacity: 0, y: 20 }}
+             whileInView={{ opacity: 1, y: 0 }}
+             viewport={{ once: true }}
+          >
+             <h2 style={{ marginBottom: 16 }}>How It Works</h2>
+             <p style={{ maxWidth: 800, margin: '0 auto', color: 'var(--text-secondary)' }}>
+                Start anonymously with a quick mood check-in. Explore fun activities anytime. 
+                When you're ready, create an account to chat with Milo (our AI companion), 
+                join communities with others who share your interests, and connect with real volunteers.
+             </p>
+          </motion.div>
+        </div>
+      </div>
+
+      <footer className="footer-v2">
+        <div style={{ opacity: 0.5 }}>© 2026 Youngistaan Foundation. Empowering 14K+ Volunteers.</div>
+        <div className="footer-links" style={{ fontSize: 14 }}>
+          <span className="nav-link" style={{ cursor: 'pointer' }}>Privacy Policy</span>
+          <span className="nav-link" style={{ cursor: 'pointer' }}>Contact Us</span>
+        </div>
+      </footer>
     </div>
   );
 }
