@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { LayoutDashboard } from 'lucide-react';
 
 const MOODS = [
   { label: 'Good', emoji: '😊' },
@@ -94,6 +95,14 @@ export default function MoodTracker() {
             onClick={handleContinue}
           >
             Continue
+          </button>
+
+          <button
+            className="btn btn-outline btn-lg"
+            style={{ width: '100%', maxWidth: 400, padding: '14px 0', fontSize: 16, borderRadius: 100, display: 'flex', justifyContent: 'center', gap: 8, alignItems: 'center', background: 'transparent', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}
+            onClick={() => navigate('/dashboard')}
+          >
+            <LayoutDashboard size={18} /> Back to Dashboard
           </button>
 
           <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.5 }}>

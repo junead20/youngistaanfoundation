@@ -41,7 +41,8 @@ export default function Chatbot() {
     try {
       const res = await axios.post('/api/chat', {
         message: text,
-        moodData
+        moodData,
+        history: messages.slice(-6).map(m => ({ role: m.role, content: m.content }))
       }, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });

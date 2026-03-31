@@ -2,243 +2,260 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import axios from 'axios';
 import {
-  Users, ToggleLeft, ToggleRight, Star,
-  MessageCircle, Clock, CheckCircle, AlertTriangle,
-  History, Heart, Info, ArrowLeft, Send
+  Users, Bell, AlertTriangle, MessageCircle, 
+  History, Send, Shield, ChevronDown, CheckCircle, Clock
 } from 'lucide-react';
-
-const MOCK_REQUESTS = [
-  {
-    id: 1, userId: 'MBX4821', emotion: 'Stressed', stressLevel: 8,
-    stressors: ['Studies', 'Anxiety'], time: '2 min ago', status: 'waiting',
-    lastNote: "I have three finals next week and I haven't even started studying. My chest feels tight."
-  },
-  {
-    id: 2, userId: 'MBX2193', emotion: 'Sad', stressLevel: 6,
-    stressors: ['Family'], time: '8 min ago', status: 'waiting',
-    lastNote: "My parents are fighting again. It's hard to focus on anything else."
-  },
-  {
-    id: 3, userId: 'MBX9056', emotion: 'Stressed', stressLevel: 9,
-    stressors: ['Relationships', 'Anxiety'], time: '15 min ago', status: 'waiting',
-    lastNote: "My partner and I just broke up. I feel like my world is ending."
-  },
-];
-
-const RECENT_SESSIONS = [
-  { id: 's1', userId: 'MBX3310', duration: '24 min', rating: 5, topic: 'Exam anxiety' },
-  { id: 's2', userId: 'MBX7821', duration: '18 min', rating: 4, topic: 'Family conflict' },
-];
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, 
+  Tooltip, ResponsiveContainer, ReferenceLine
+} from 'recharts';
 
 export default function VolunteerDashboard() {
   const { volunteer } = useApp();
-  const [isAvailable, setIsAvailable] = useState(true);
-  const [requests, setRequests] = useState(MOCK_REQUESTS);
-  const [activeSession, setActiveSession] = useState(null);
-  const [chatInput, setChatInput] = useState('');
-  const [chatMessages, setChatMessages] = useState([]);
+  const [mentees, setMentees] = useState([]);
+  const [selectedMentee, setSelectedMentee] = useState(null);
+  const [moodHistory, setMoodHistory] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showNotifs, setShowNotifs] = useState(false);
 
-  const toggleAvailability = async () => {
-    const next = !isAvailable;
-    setIsAvailable(next);
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
+
+  const fetchInitialData = async () => {
+    if (!volunteer?.token) return;
     try {
-      await axios.put('/api/mentor/availability', { isAvailable: next }, { headers: { Authorization: `Bearer ${volunteer?.token}` } });
+      const config = { headers: { Authorization: `Bearer ${volunteer.token}` } };
+      const [mtRes, ntRes] = await Promise.all([
+        axios.get('/api/volunteer/mentees', config),
+        axios.get('/api/volunteer/notifications', config)
+      ]);
+      setMentees(mtRes.data);
+      setNotifications(ntRes.data);
+      if (mtRes.data.length > 0) {
+        handleSelectMentee(mtRes.data[0]);
+      }
+    } catch (err) {
+      console.error('Fetch error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSelectMentee = async (mentee) => {
+    if (!volunteer?.token) return;
+    setSelectedMentee(mentee);
+    try {
+      const config = { headers: { Authorization: `Bearer ${volunteer.token}` } };
+      const res = await axios.get(`/api/volunteer/mentees/${mentee.userId}/history`, config);
+      // Recharts expects mood score 1-10. We'll use 11 - stressLevel for "Mood Score"
+      const chartData = res.data.map(d => ({
+        date: new Date(d.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' }),
+        mood: 11 - d.stressLevel,
+        stress: d.stressLevel,
+        emotion: d.emotion
+      }));
+      setMoodHistory(chartData);
+    } catch (err) {
+      console.error('History error:', err);
+    }
+  };
+
+  const markRead = async (id) => {
+    if (!volunteer?.token) return;
+    try {
+      const config = { headers: { Authorization: `Bearer ${volunteer.token}` } };
+      await axios.put(`/api/volunteer/notifications/${id}/read`, {}, config);
+      setNotifications(prev => prev.filter(n => n._id !== id));
     } catch { }
   };
 
-  const acceptRequest = (req) => {
-    setRequests(prev => prev.filter(r => r.id !== req.id));
-    setActiveSession(req);
-    setChatMessages([
-      { role: 'system', content: `Session started with ${req.userId}. They are feeling ${req.emotion} (Stress: ${req.stressLevel}/10).` },
-      { role: 'user', content: req.lastNote || "Hi, I need someone to talk to...", sender: req.userId }
-    ]);
-  };
+  if (loading) return <div className="app-layout" style={{ justifyContent: 'center' }}><span className="spinner" /></div>;
 
-  const sendVolMsg = () => {
-    if (!chatInput.trim()) return;
-    setChatMessages(prev => [...prev, { role: 'volunteer', content: chatInput, sender: volunteer?.name || 'You', time: new Date() }]);
-    setChatInput('');
-  };
-
-  const endSession = () => { setActiveSession(null); setChatMessages([]); };
-
-  const stats = [
-    { label: 'Total Sessions', value: volunteer?.totalSessions || 12, color: '#A78BFA' },
-    { label: 'Active Requests', value: requests.length, color: '#F59E0B' },
-    { label: 'Rating', value: '4.9 ⭐', color: '#10B981' },
-    { label: 'Helped Today', value: 3, color: '#67E8F9' },
-  ];
+  const isAtRisk = selectedMentee?.latestMood?.stressLevel >= 7;
+  const currentNotif = notifications.find(n => n.userId === selectedMentee?.userId);
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-primary)' }}>
-      {/* Volunteer Sidebar */}
-      <div style={{ width: 280, minHeight: '100vh', background: 'rgba(13,17,40,0.98)', borderRight: '1px solid var(--border)', padding: '24px 16px', display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 10 }}>
-        <div style={{ marginBottom: 32 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #06B6D4, #0EA5E9)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Users size={20} color="white" /></div>
-            <span style={{ fontSize: 18, fontWeight: 800, fontFamily: 'Plus Jakarta Sans' }} className="gradient-text">Manobandhu</span>
-          </div>
-          <p style={{ fontSize: 12, color: 'var(--text-muted)', paddingLeft: 46 }}>Volunteer Portal</p>
+    <div className="app-layout" style={{ background: '#F8FAFC', color: '#1E293B', minHeight: '100vh', display: 'flex' }}>
+      
+      {/* Sidebar - Optional Sidebar from Wireframe */}
+      <aside style={{ width: 260, background: 'white', borderRight: '1px solid #E2E8F0', padding: 24, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 32 }}>
+          <div style={{ padding: 8, background: '#7C3AED', borderRadius: 10 }}><Shield size={20} color="white" /></div>
+          <h2 style={{ fontSize: 18, fontWeight: 800 }}>Volunt-Care</h2>
         </div>
 
-        <div style={{ padding: '20px', background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.2)', borderRadius: 16, marginBottom: 24 }}>
-          <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4, color: '#67E8F9' }}>{volunteer?.name || 'Volunteer Account'}</div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>{volunteer?.email || 'mentor@Manobandhu.ai'}</div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {(volunteer?.expertise || ['Anxiety', 'Depression']).map(e => <span key={e} className="badge badge-teal" style={{ fontSize: 10 }}>{e}</span>)}
-          </div>
-        </div>
-
-        <div style={{ padding: '14px 16px', borderRadius: 12, background: isAvailable ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${isAvailable ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`, marginBottom: 24, cursor: 'pointer' }} onClick={toggleAvailability}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: isAvailable ? '#6EE7B7' : '#FCA5A5' }}>{isAvailable ? '🟢 Online' : '🔴 Offline'}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Tap to toggle status</div>
-            </div>
-            {isAvailable ? <ToggleRight size={28} color="#10B981" /> : <ToggleLeft size={28} color="#EF4444" />}
-          </div>
-        </div>
-
-        <div style={{ flex: 1 }} />
-        <div className="glass" style={{ padding: 16, textAlign: 'center', borderRadius: 12 }}>
-          <Heart size={20} color="#EC4899" style={{ marginBottom: 8 }} />
-          <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>You've supported 14 people this week.</p>
-        </div>
-      </div>
-
-      <main style={{ marginLeft: 280, flex: 1, padding: 32, minHeight: '100vh' }}>
-        <div style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
-            <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 4 }}>Welcome, <span className="gradient-text">{volunteer?.name?.split(' ')[0] || 'Mentor'} 👋</span></h1>
-            <p style={{ color: 'var(--text-secondary)' }}>You are currently active and ready to support.</p>
-          </div>
-          <div style={{ display: 'flex', gap: 12 }}>
-            {stats.map((s, i) => (
-              <div key={i} className="glass" style={{ padding: '12px 20px', textAlign: 'center' }}>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 2 }}>{s.label}</div>
-                <div style={{ fontSize: 20, fontWeight: 800, color: s.color }}>{s.value}</div>
-              </div>
+        <div style={{ flex: 1 }}>
+          <label className="label" style={{ color: '#64748B', fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 16, display: 'block' }}>Mentees</label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {mentees.map(m => (
+              <button
+                key={m.userId}
+                onClick={() => handleSelectMentee(m)}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px',
+                  borderRadius: 12, border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s',
+                  background: selectedMentee?.userId === m.userId ? '#F1F5F9' : 'transparent',
+                  color: selectedMentee?.userId === m.userId ? '#0F172A' : '#64748B'
+                }}
+              >
+                <span style={{ fontSize: 13, fontWeight: 600 }}>{m.userId}</span>
+                {m.latestMood?.stressLevel >= 7 && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#EF4444' }} />}
+              </button>
             ))}
           </div>
         </div>
+      </aside>
 
-        <div style={{ display: 'grid', gridTemplateColumns: activeSession ? '1fr 1.2fr' : '1fr', gap: 24, alignItems: 'start' }}>
-
-          {/* Requests Column */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#F59E0B' }} className="animate-pulse" />
-              <div style={{ fontSize: 18, fontWeight: 700 }}>Active Support Requests ({requests.length})</div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: activeSession ? '1fr' : 'repeat(auto-fill, minmax(350px, 1fr))', gap: 16 }}>
-              {requests.map(req => (
-                <div key={req.id} className="glass animate-fade-up" style={{ padding: 24, borderLeft: `4px solid ${req.stressLevel >= 7 ? '#EF4444' : '#F59E0B'}` }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
-                    <div>
-                      <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 4 }}>User {req.userId}</div>
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                        <span style={{ fontSize: 22 }}>{req.emotion === 'Stressed' ? '😣' : '😔'}</span>
-                        <span className={`badge ${req.stressLevel >= 7 ? 'badge-red' : 'badge-yellow'}`} style={{ fontSize: 11 }}>Stress {req.stressLevel}/10</span>
-                      </div>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}><Clock size={14} /> {req.time}</div>
-                    </div>
+      <div style={{ flex: 1, overflowY: 'auto' }}>
+        {/* Header */}
+        <header style={{ height: 80, background: 'white', borderBottom: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px', position: 'sticky', top: 0, zIndex: 50 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 800 }}>Volunteer Dashboard</h1>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+            <div style={{ position: 'relative' }}>
+              <button 
+                onClick={() => setShowNotifs(!showNotifs)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', position: 'relative', padding: 8 }}
+              >
+                <Bell size={22} color="#64748B" />
+                {notifications.length > 0 && (
+                  <span style={{ position: 'absolute', top: 6, right: 6, width: 10, height: 10, background: '#EF4444', borderRadius: '50%', border: '2px solid white' }} />
+                )}
+              </button>
+              
+              {showNotifs && (
+                <div className="glass" style={{ position: 'absolute', top: '100%', right: 0, width: 320, background: 'white', boxShadow: '0 20px 40px rgba(0,0,0,0.1)', padding: 16, marginTop: 12, borderRadius: 16 }}>
+                  <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 12, color: '#1E293B' }}>Alerts ({notifications.length})</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {notifications.length === 0 ? <p style={{ fontSize: 12, color: '#94A3B8' }}>No unread alerts</p> : 
+                      notifications.map(n => (
+                        <div key={n._id} style={{ padding: 12, background: '#FFF7ED', borderRadius: 10, border: '1px solid #FFEDD5' }}>
+                          <p style={{ fontSize: 12, lineHeight: 1.4, color: '#9A3412', marginBottom: 8 }}>{n.message}</p>
+                          <button onClick={() => markRead(n._id)} style={{ padding: '4px 8px', background: 'white', border: '1px solid #FFEDD5', borderRadius: 6, fontSize: 10, cursor: 'pointer' }}>Mark Read</button>
+                        </div>
+                      ))
+                    }
                   </div>
-
-                  <div style={{ padding: '12px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: 12, marginBottom: 20, border: '1px solid var(--border)' }}>
-                    <p style={{ fontSize: 14, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.5 }}>"{req.lastNote}"</p>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
-                    {req.stressors.map(s => <span key={s} className="badge badge-purple" style={{ fontSize: 11 }}>{s}</span>)}
-                  </div>
-
-                  <button className="btn btn-teal" style={{ width: '100%', height: 48 }} onClick={() => acceptRequest(req)}>
-                    <MessageCircle size={18} /> Accept Request
-                  </button>
                 </div>
-              ))}
+              )}
             </div>
-
-            {requests.length === 0 && (
-              <div className="glass" style={{ padding: 60, textAlign: 'center' }}>
-                <CheckCircle size={40} color="#10B981" style={{ marginBottom: 16, opacity: 0.5 }} />
-                <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Queue Clear</h3>
-                <p style={{ color: 'var(--text-muted)' }}>Great job! There are no waiting requests at the moment.</p>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: 13, fontWeight: 700 }}>{volunteer?.name}</div>
+                <div style={{ fontSize: 11, color: '#64748B' }}>Primary Mentor</div>
               </div>
-            )}
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: '#E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ChevronDown size={18} color="#64748B" /></div>
+            </div>
+          </div>
+        </header>
+
+        <main style={{ padding: 40, maxWidth: 1200, margin: '0 auto' }}>
+          
+          {/* Mentee Selector Dropdown */}
+          <div style={{ marginBottom: 32, display: 'flex', alignItems: 'center', gap: 16 }}>
+            <span style={{ fontSize: 14, fontWeight: 600, color: '#64748B' }}>Select Mentee</span>
+            <div style={{ position: 'relative' }}>
+              <select 
+                className="input" 
+                style={{ width: 300, appearance: 'none', background: 'white', border: '1px solid #E2E8F0' }}
+                value={selectedMentee?.userId}
+                onChange={e => handleSelectMentee(mentees.find(m => m.userId === e.target.value))}
+              >
+                {mentees.map(m => <option key={m.userId} value={m.userId}>Mentee {m.userId}</option>)}
+              </select>
+              <ChevronDown size={16} color="#94A3B8" style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+            </div>
           </div>
 
-          {/* Chat Window */}
-          {activeSession && (
-            <div className="glass animate-fade-right" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)', position: 'sticky', top: 32, overflow: 'hidden' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 32 }}>
+            
+            {/* SECTION A: STUDENT SUMMARY CARD */}
+            <section style={{ background: 'white', padding: 32, borderRadius: 24, border: '1px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <h3 style={{ fontSize: 12, fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 16 }}>Section A: Student Summary Card</h3>
+                  <div style={{ display: 'grid', gap: 8 }}>
+                    <div style={{ fontSize: 18, fontWeight: 800 }}>Mentee ID: <span style={{ fontWeight: 500 }}>{selectedMentee?.userId}</span></div>
+                    <div style={{ fontSize: 18, fontWeight: 800 }}>Current Mood Score: <span style={{ fontWeight: 500, color: isAtRisk ? '#EF4444' : '#10B981' }}>{11 - selectedMentee?.latestMood?.stressLevel}/10</span></div>
+                    <div style={{ fontSize: 18, fontWeight: 800 }}>Risk Status Label: <span style={{ padding: '4px 12px', borderRadius: 8, fontSize: 14, background: isAtRisk ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)', color: isAtRisk ? '#EF4444' : '#10B981' }}>{isAtRisk ? 'At Risk' : 'Normal'}</span></div>
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  {isAtRisk && <div style={{ background: '#EF4444', color: 'white', padding: '6px 12px', borderRadius: 8, fontWeight: 800, fontSize: 12 }}>At Risk</div>}
+                  <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 12 }}>Last updated: {selectedMentee?.latestMood?.timestamp ? new Date(selectedMentee.latestMood.timestamp).toLocaleDateString() : 'Today'}</div>
+                </div>
+              </div>
+            </section>
 
-              {/* Chat Header */}
-              <div style={{ padding: '20px 24px', background: 'rgba(6,182,212,0.1)', borderBottom: '1px solid rgba(6,182,212,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(6,182,212,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, color: '#67E8F9' }}>{activeSession.userId[0]}</div>
+            {/* SECTION B: MOOD TREND LINE CHART */}
+            <section style={{ background: 'white', padding: 32, borderRadius: 24, border: '1px solid #E2E8F0' }}>
+              <h3 style={{ fontSize: 12, fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 24 }}>Section B: Mood Trend Line Chart</h3>
+              <div style={{ height: 350, width: '100%' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={moodHistory} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                    <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94A3B8' }} />
+                    <YAxis domain={[0, 10]} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94A3B8' }} label={{ value: 'Mood score (1-10)', angle: -90, position: 'insideLeft', offset: 10 }} />
+                    <Tooltip 
+                      contentStyle={{ background: 'white', border: '1px solid #E2E8F0', borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,0.1)' }}
+                      itemStyle={{ color: '#7C3AED', fontWeight: 800 }}
+                    />
+                    <ReferenceLine y={4} stroke="#EF4444" strokeDasharray="3 3" label={{ position: 'right', value: 'Low Mood', fill: '#EF4444', fontSize: 10 }} />
+                    <Line type="monotone" dataKey="mood" stroke="#7C3AED" strokeWidth={3} dot={{ r: 6, fill: '#7C3AED', strokeWidth: 2, stroke: 'white' }} activeDot={{ r: 8, strokeWidth: 0 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              <p style={{ textAlign: 'center', fontSize: 13, color: '#94A3B8', marginTop: 16 }}>Dates (last 7-14 days)</p>
+            </section>
+
+            {/* SECTION C: ALERT / NOTIFICATION PANEL */}
+            <section style={{ background: isAtRisk ? '#FFF1F2' : 'white', padding: 32, borderRadius: 24, border: `1px solid ${isAtRisk ? '#FECDD3' : '#E2E8F0'}` }}>
+              <h3 style={{ fontSize: 12, fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 16 }}>Section C: Alert / Notification Panel</h3>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: isAtRisk ? '#F43F5E' : '#E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <AlertTriangle size={20} color={isAtRisk ? 'white' : '#94A3B8'} />
+                  </div>
                   <div>
-                    <div style={{ fontWeight: 800, fontSize: 16 }}>{activeSession.userId}</div>
-                    <div style={{ fontSize: 12, color: '#6EE7B7', display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span className="animate-pulse" style={{ width: 6, height: 6, borderRadius: '50%', background: '#6EE7B7' }} /> Live Session
+                    <h4 style={{ fontWeight: 800, fontSize: 16, color: isAtRisk ? '#9F1239' : '#1E293B' }}>
+                      {currentNotif ? currentNotif.message : (isAtRisk ? "At-Risk Alert Detected" : "Status Normal")}
+                    </h4>
+                    <p style={{ fontSize: 14, color: isAtRisk ? '#BE123C' : '#64748B' }}>
+                      {isAtRisk ? "This student has shown high stress levels recently." : "Mentee is consistently maintaining a positive mood trend."}
+                    </p>
+                  </div>
+                </div>
+                {isAtRisk && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <div style={{ color: '#F43F5E', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 800, fontSize: 13 }}>
+                      <AlertTriangle size={16} /> At Risk
                     </div>
+                    <button className="btn btn-primary" style={{ background: '#F43F5E', border: 'none' }}>Reach Out</button>
                   </div>
-                </div>
-                <button className="btn btn-danger btn-sm" onClick={endSession}><LogOut size={14} /> End Session</button>
+                )}
               </div>
+            </section>
 
-              {/* Chat Messages */}
-              <div style={{ flex: 1, overflowY: 'auto', padding: '24px', background: 'rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', gap: 20 }}>
-                {chatMessages.map((m, i) => (
-                  <div key={i}>
-                    {m.role === 'system' ? (
-                      <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', margin: '8px 0' }}>
-                        <div style={{ padding: '8px 16px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 12, fontSize: 12, color: '#FCD34D', display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <Info size={14} /> {m.content}
-                        </div>
-                      </div>
-                    ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: m.role === 'volunteer' ? 'flex-end' : 'flex-start', gap: 6 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-                          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)' }}>{m.sender}</span>
-                          <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{m.time ? new Date(m.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}</span>
-                        </div>
-                        <div className={`chat-bubble ${m.role === 'volunteer' ? 'chat-bubble-user' : 'chat-bubble-ai'}`} style={{ maxWidth: '85%', borderRadius: 20, padding: '12px 20px', background: m.role === 'volunteer' ? 'var(--teal-primary)' : 'rgba(255,255,255,0.05)', border: 'none' }}>{m.content}</div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+            {/* SECTION D: ACTION PANEL */}
+            <section style={{ background: 'white', padding: 32, borderRadius: 24, border: '1px solid #E2E8F0' }}>
+              <h3 style={{ fontSize: 12, fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 24 }}>Section D: Action Panel</h3>
+              <div style={{ display: 'flex', gap: 16 }}>
+                <button className="btn btn-primary" style={{ height: 48, padding: '0 24px', gap: 8 }}>
+                  <MessageCircle size={18} /> Start Conversation
+                </button>
+                <button className="btn btn-outline" style={{ height: 48, padding: '0 24px', gap: 8, borderColor: '#E2E8F0', color: '#64748B' }}>
+                  <History size={18} /> View History
+                </button>
               </div>
+            </section>
 
-              {/* Chat Input */}
-              <div style={{ padding: '20px 24px', background: 'var(--bg-secondary)', borderTop: '1px solid var(--border)' }}>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type="text"
-                    placeholder="Type your supportive response..."
-                    value={chatInput}
-                    onChange={e => setChatInput(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && sendVolMsg()}
-                    className="input"
-                    style={{ height: 50, paddingRight: 60, borderRadius: 14 }}
-                  />
-                  <button
-                    onClick={sendVolMsg}
-                    disabled={!chatInput.trim()}
-                    style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', width: 36, height: 36, borderRadius: 10, background: 'var(--teal-primary)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s', opacity: chatInput.trim() ? 1 : 0.5 }}
-                  >
-                    <Send size={18} color="white" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-        </div>
-      </main>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
+

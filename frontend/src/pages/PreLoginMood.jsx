@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart } from 'lucide-react';
+import EmergencySOS from '../components/EmergencySOS';
 
 export default function PreLoginMood() {
   const navigate = useNavigate();
@@ -36,12 +37,14 @@ export default function PreLoginMood() {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
           <button
             className="btn btn-primary btn-lg"
-            style={{ padding: '16px 48px', fontSize: 18, borderRadius: 100 }}
-            onClick={() => navigate('/mood')}
+            style={{ padding: '16px 48px', fontSize: 18, borderRadius: 100, transition: 'all 0.3s' }}
+            onClick={() => navigate('/login')}
           >
-            Start with how I feel
+            Begin Anonymously
           </button>
-          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>No login required</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-muted)' }}>
+            <span style={{ fontSize: 14 }}>🔒</span> No registration or email required
+          </div>
         </div>
 
         <div style={{ display: 'flex', gap: 16, marginTop: 48, flexWrap: 'wrap', justifyContent: 'center' }} className="animate-fade-up delay-200">
@@ -93,6 +96,7 @@ export default function PreLoginMood() {
           </div>
         </div>
       </div>
+      <EmergencySOS />
     </div>
   );
 }

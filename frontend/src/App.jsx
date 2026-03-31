@@ -34,15 +34,15 @@ export default function App() {
       <Route path="/" element={<PreLoginMood />} />
       <Route path="/login" element={<UserLogin />} />
       <Route path="/volunteer-login" element={<VolunteerLogin />} />
+      <Route path="/chat" element={<Chatbot />} />
+      <Route path="/mood" element={<MoodTracker />} />
+      <Route path="/stress-relief" element={<StressRelief />} />
 
       {/* User Protected */}
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/chat" element={<ProtectedRoute><Chatbot /></ProtectedRoute>} />
-      <Route path="/mood" element={<ProtectedRoute><MoodTracker /></ProtectedRoute>} />
       <Route path="/ngo" element={<ProtectedRoute><NGODirectory /></ProtectedRoute>} />
       <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
       <Route path="/mentor-chat" element={<ProtectedRoute><MentorChat /></ProtectedRoute>} />
-      <Route path="/stress-relief" element={<ProtectedRoute><StressRelief /></ProtectedRoute>} />
 
       {/* Volunteer Protected */}
       <Route path="/volunteer-dashboard" element={<VolunteerRoute><VolunteerDashboard /></VolunteerRoute>} />

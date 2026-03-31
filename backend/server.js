@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const app = express();
 const server = http.createServer(app);
@@ -23,6 +24,8 @@ app.use('/api/chat', require('./routes/chat'));
 app.use('/api/mentor', require('./routes/mentor'));
 app.use('/api/ngo', require('./routes/ngo'));
 app.use('/api/community', require('./routes/community'));
+app.use('/api/volunteer', require('./routes/volunteer'));
+app.use('/api/recommendation', require('./routes/recommendation'));
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'Manobandhu API running ✅' }));

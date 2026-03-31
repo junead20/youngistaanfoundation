@@ -6,6 +6,7 @@ import {
   Search, Filter, ShieldCheck, MapPin,
   Clock, Heart
 } from 'lucide-react';
+import SmartMatch from '../components/SmartMatch';
 
 const MOCK_NGOS = [
   { name: 'AASRA', description: 'Crisis intervention for people in emotional distress', phone: '9820466627', website: 'http://www.aasra.info', tags: ['Suicide Prevention', 'Crisis'], isHelpline: true, available24x7: true },
@@ -43,6 +44,8 @@ export default function NGODirectory() {
           <h1 className="section-title"><Building2 size={22} style={{ display: 'inline', marginRight: 10, color: '#EF4444' }} />Resources & Helplines</h1>
           <p className="section-subtitle">Verified organizations and 24/7 care for professional support.</p>
         </div>
+
+        <SmartMatch />
 
         {/* Search & Filter */}
         <div style={{ display: 'flex', gap: 16, marginBottom: 32 }} className="animate-fade-up">

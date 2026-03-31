@@ -2,6 +2,22 @@ const express = require('express');
 const router = express.Router();
 const ChatMessage = require('../models/ChatMessage');
 const authMiddleware = require('../middleware/auth');
+const jwt = require('jsonwebtoken');
+
+const optionalAuth = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.split(' ')[1];
+    if (token && token !== 'undefined') {
+      try {
+        req.user = jwt.verify(token, process.env.JWT_SECRET);
+      } catch (err) {
+        // Ignored, proceed as anonymous
+      }
+    }
+  }
+  next();
+};
 
 const CRISIS_KEYWORDS = ['suicide', 'kill myself', 'end my life', 'self harm', 'hurt myself', 'want to die', 'no reason to live'];
 
@@ -29,58 +45,102 @@ async function getAIResponse(userMessage, context, moodData) {
     };
   }
 
-  // If Gemini API key is available, use it
-  if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'your_gemini_api_key_here') {
-    try {
-      const { GoogleGenerativeAI } = require('@google/generative-ai');
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+  try {
+    const SYSTEM_PROMPT = `
+You are a casual chat companion for teenagers.
 
-      const systemPrompt = `You are Manobandhu AI — a compassionate, teen-friendly mental health support assistant. 
-      You provide emotional support, NOT medical advice. Be warm, empathetic, and non-judgmental.
-      Current user mood: ${moodData?.emotion || 'Unknown'}, Stress level: ${moodData?.stressLevel || 'Unknown'}/10.
-      Keep responses concise (2-3 sentences max). Use emojis sparingly. Never diagnose.`;
+Rules:
+- Max 2 sentences
+- No motivational lines
+- No therapy tone
+- Talk like a normal friend
+- Ask simple questions
 
-      const chat = model.startChat({
-        history: context.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] }))
-      });
-      const result = await chat.sendMessage(`${systemPrompt}\n\nUser: ${userMessage}`);
-      return { message: result.response.text(), isCrisis: false };
-    } catch (e) {
-      console.log('Gemini error, falling back to mock:', e.message);
+Never say:
+"You are not alone"
+"Many people feel this way"
+"It takes courage"
+
+Be short, natural, and real.
+
+Current user mood: ${moodData?.emotion || 'Unknown'}, Stress level: ${moodData?.stressLevel || 'Unknown'}/10.`;
+
+    const messages = [
+      { role: "system", content: SYSTEM_PROMPT },
+      ...context.map(msg => ({
+        role: msg.role === 'assistant' ? 'assistant' : 'user',
+        content: msg.content
+      })),
+      { role: "user", content: userMessage }
+    ];
+
+    const OLLAMA_URL = process.env.OLLAMA_URL || "http://127.0.0.1:11434/api/chat";
+    const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "llama3.2";
+
+    const response = await fetch(OLLAMA_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: OLLAMA_MODEL,
+        messages,
+        stream: false
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Ollama Error: ${response.statusText}`);
     }
+
+    const data = await response.json();
+    let reply = data.message?.content || "";
+
+    // 🔥 Hard control (IMPORTANT)
+    reply = reply.split(/[.!?]/).slice(0, 2).join(".") + ".";
+
+    return { message: reply.trim(), isCrisis: false };
+  } catch (err) {
+    console.log('Ollama error, falling back to mock:', err.message);
   }
 
-  // Mock response with mood-aware selection
+  // Mock response with mood-aware selection (Fallback)
   const stressLevel = moodData?.stressLevel || 5;
   const responseIndex = Math.floor(Math.random() * MOCK_RESPONSES.length);
-  let response = MOCK_RESPONSES[responseIndex];
+  let fallbackReply = MOCK_RESPONSES[responseIndex];
 
   if (stressLevel >= 7) {
-    response = "I can see you're going through a really hard time right now. 💙 Your feelings are valid. Would you like me to connect you with a volunteer mentor who can provide more personalized support?";
+    fallbackReply = "I can see you're going through a really hard time right now. 💙 Your feelings are valid. Would you like me to connect you with a volunteer mentor who can provide more personalized support?";
   }
 
-  return { message: response, isCrisis: false };
+  return { message: fallbackReply, isCrisis: false };
 }
 
 // POST /api/chat - Send message to AI
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', optionalAuth, async (req, res) => {
   try {
-    const { message, moodData } = req.body;
-    const userId = req.user.userId;
+    const { message, moodData, history: clientHistory } = req.body;
+    let context = [];
 
-    // Get recent chat history for context
-    const history = await ChatMessage.find({ userId }).sort({ timestamp: -1 }).limit(10).catch(() => []);
-    const context = history.reverse();
+    if (req.user) {
+      const userId = req.user.userId;
+      // Get recent chat history for context
+      const dbHistory = await ChatMessage.find({ userId }).sort({ timestamp: -1 }).limit(10).catch(() => []);
+      context = dbHistory.reverse();
 
-    // Save user message
-    await ChatMessage.create({ userId, role: 'user', content: message }).catch(() => { });
+      // Save user message
+      await ChatMessage.create({ userId, role: 'user', content: message }).catch(() => { });
+    } else {
+      // Anonymous user: Use client history for context
+      context = clientHistory || [];
+    }
 
     // Get AI response
     const { message: aiMessage, isCrisis } = await getAIResponse(message, context, moodData);
 
-    // Save AI response
-    await ChatMessage.create({ userId, role: 'assistant', content: aiMessage }).catch(() => { });
+    if (req.user) {
+      const userId = req.user.userId;
+      // Save AI response
+      await ChatMessage.create({ userId, role: 'assistant', content: aiMessage }).catch(() => { });
+    }
 
     res.json({ success: true, message: aiMessage, isCrisis });
   } catch (err) {

@@ -50,34 +50,13 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// POST /api/auth/volunteer/register
-router.post('/volunteer/register', async (req, res) => {
+// GET /api/auth/me - Fetch current user profile
+const auth = require('../middleware/auth');
+router.get('/me', auth, async (req, res) => {
   try {
-    const { name, email, password, expertise, ageGroups, bio } = req.body;
-    const existing = await Volunteer.findOne({ email });
-    if (existing) return res.status(400).json({ message: 'Email already registered' });
-    const volunteer = await Volunteer.create({ name, email, password, expertise, ageGroups, bio });
-    const token = jwt.sign({ volunteerId: volunteer._id, role: 'volunteer', name: volunteer.name }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.status(201).json({ success: true, token, name: volunteer.name, volunteerId: volunteer._id });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// POST /api/auth/volunteer/login
-router.post('/volunteer/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ message: 'Email and password required' });
-    const volunteer = await Volunteer.findOne({ email });
-    if (!volunteer) return res.status(401).json({ message: 'Invalid credentials' });
-    const isMatch = await volunteer.comparePassword(password);
-    if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
-    const token = jwt.sign({ volunteerId: volunteer._id, role: 'volunteer', name: volunteer.name }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.json({
-      success: true, token,
-      volunteer: { name: volunteer.name, email: volunteer.email, expertise: volunteer.expertise, isAvailable: volunteer.isAvailable, totalSessions: volunteer.totalSessions }
-    });
+    const user = await User.findOne({ userId: req.user.userId });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json(user);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
