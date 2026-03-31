@@ -3,15 +3,16 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import {
   Brain, MessageCircle, Heart, Users, Building2,
-  Globe, LayoutDashboard, LogOut, Zap, Star, Activity, Wind
+  Globe, LayoutDashboard, LogOut, Zap, Star, Activity, Wind, Sparkles
 } from 'lucide-react';
 
 const NAV_ITEMS = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { path: '/milo', icon: Sparkles, label: 'Chat with Milo' },
   { path: '/community', icon: Globe, label: 'Community' },
-  { path: '/chat', icon: MessageCircle, label: 'AI Chat' },
+  { path: '/chat', icon: Heart, label: 'Talk to Loved Ones' },
   { path: '/stress-relief', icon: Wind, label: 'Stress Relief' },
-  { path: '/mood', icon: Heart, label: 'Mood Tracker' },
+  { path: '/mood', icon: MessageCircle, label: 'Mood Tracker' },
   { path: '/mentor-chat', icon: Users, label: 'Talk to Mentor' },
   { path: '/ngo', icon: Building2, label: 'NGO Directory' },
 ];

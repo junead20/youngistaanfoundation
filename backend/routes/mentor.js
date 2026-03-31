@@ -29,13 +29,13 @@ router.get('/', async (req, res) => {
  */
 router.post('/request', auth, async (req, res) => {
   try {
-    const { mentorId, issue } = req.body;
+    const { mentorId, issue, isEmergency } = req.body;
     const userId = req.user.userId;
 
     // Logic to notify mentor via Socket.io or DB record would go here
-    console.log(`Mentor Request: ${userId} requested ${mentorId} for issue: ${issue || 'General'}`);
+    console.log(`[${isEmergency ? '!!! EMERGENCY !!!' : 'Normal'}] Mentor Request: ${userId} requested ${mentorId} for issue: ${issue || 'General'}`);
 
-    res.json({ success: true, message: 'Request sent to mentor. Please wait for them to accept.' });
+    res.json({ success: true, message: isEmergency ? 'Crisis alert sent! A mentor is being notified immediately.' : 'Request sent to mentor. Please wait for them to accept.' });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }

@@ -105,11 +105,53 @@ export default function NGODashboard() {
           </div>
         </div>
 
-        {/* Impact Map Stub */}
-        <div className="glass" style={{ marginTop: 24, padding: 32, textAlign: 'center', height: 200, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-            <Globe size={48} color="var(--purple-light)" style={{ opacity: 0.3, marginBottom: 16 }} />
-            <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-secondary)' }}>Regional Impact Analysis</h3>
-            <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Data visualization module loading...</p>
+        {/* Mood Trends & Engagement Calendar */}
+        <div className="glass" style={{ marginTop: 24, padding: 32, borderRadius: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
+             <TrendingUp size={24} color="#06B6D4" />
+             <div>
+               <h3 style={{ fontSize: 18, fontWeight: 800 }}>Community Mood Trends & Engagement</h3>
+               <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Anonymized aggregate data of daily check-ins and AI interactions</p>
+             </div>
+          </div>
+          
+          <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+            {/* 30-day mini heatmap */}
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8, marginBottom: 8 }}>
+                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => <div key={i} style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-muted)' }}>{d}</div>)}
+                {Array.from({ length: 30 }).map((_, i) => {
+                  const stress = Math.floor(Math.random() * 10) + 1;
+                  const noData = Math.random() > 0.8;
+                  const color = noData ? 'rgba(255,255,255,0.03)' : stress >= 7 ? 'rgba(239,68,68,0.4)' : stress >= 4 ? 'rgba(245,158,11,0.4)' : 'rgba(16,185,129,0.4)';
+                  return (
+                    <div key={i} style={{ aspectRatio: '1', borderRadius: 6, background: color, border: '1px solid rgba(255,255,255,0.05)' }} title={noData ? 'No data' : `Avg Stress: ${stress}/10`} />
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Top Insights */}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <h4 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-secondary)' }}>AI Insights (Last 30 Days)</h4>
+              
+              <div style={{ padding: 16, borderRadius: 12, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <AlertTriangle size={16} color="#EF4444" />
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#FCA5A5' }}>High Stress Alert</span>
+                </div>
+                <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>14% increase in 'exam-related' anxiety reported in the last week. Consider scheduling a group stress-relief session.</p>
+              </div>
+
+              <div style={{ padding: 16, borderRadius: 12, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <MessageSquare size={16} color="#10B981" />
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#6EE7B7' }}>Persona Preference</span>
+                </div>
+                <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>62% of users in distress prefer the <strong>Caring Parent</strong> persona for initial stabilization, followed by <strong>Supportive Friend</strong>.</p>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
     </div>

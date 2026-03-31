@@ -8,11 +8,11 @@ import {
 } from 'lucide-react';
 
 const MOCK_NGOS = [
-  { name: 'AASRA', description: 'Crisis intervention for people in emotional distress', phone: '9820466627', website: 'http://www.aasra.info', tags: ['Suicide Prevention', 'Crisis'], isHelpline: true, available24x7: true },
-  { name: 'Vandrevala Foundation', description: 'Mental health support and counseling service', phone: '1860-2662-345', website: 'https://vandrevalafoundation.com', tags: ['Counseling', 'Crisis'], isHelpline: true, available24x7: true },
-  { name: 'iCall (TISS)', description: 'Psychosocial helpline for people in distress', phone: '9152987821', website: 'https://icallhelpline.org', tags: ['Psychological', 'Counseling'], isHelpline: true, available24x7: false },
-  { name: 'Fortis Helpline', description: 'National helpline for mental health', phone: '8376804102', website: 'https://fortishealthcare.com', tags: ['General'], isHelpline: true, available24x7: true },
-  { name: 'Sangath', description: 'Community-based mental health services', phone: '011-41196200', website: 'https://sangath.in', tags: ['Community', 'Clinical'], isHelpline: false, available24x7: false },
+  { name: 'AASRA', description: 'Crisis intervention for people in emotional distress', phone: '9820466627', website: 'http://www.aasra.info', tags: ['Suicide Prevention', 'Crisis'], isHelpline: true, available24x7: true, isVerified: true },
+  { name: 'Vandrevala Foundation', description: 'Mental health support and counseling service', phone: '1860-2662-345', website: 'https://vandrevalafoundation.com', tags: ['Counseling', 'Crisis'], isHelpline: true, available24x7: true, isVerified: true },
+  { name: 'iCall (TISS)', description: 'Psychosocial helpline for people in distress', phone: '9152987821', website: 'https://icallhelpline.org', tags: ['Psychological', 'Counseling'], isHelpline: true, available24x7: false, isVerified: true },
+  { name: 'Fortis Helpline', description: 'National helpline for mental health', phone: '8376804102', website: 'https://fortishealthcare.com', tags: ['General'], isHelpline: true, available24x7: true, isVerified: false },
+  { name: 'Sangath', description: 'Community-based mental health services', phone: '011-41196200', website: 'https://sangath.in', tags: ['Community', 'Clinical'], isHelpline: false, available24x7: false, isVerified: false },
 ];
 
 export default function NGODirectory() {
@@ -80,8 +80,13 @@ export default function NGODirectory() {
                    </div>
                    <div>
                       <h3 style={{ fontSize: 16, fontWeight: 700 }}>{ngo.name}</h3>
-                      <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                      <div style={{ display: 'flex', gap: 8, marginTop: 4, flexWrap: 'wrap' }}>
                          {ngo.available24x7 && <span className="badge badge-green" style={{ fontSize: 10 }}><Clock size={10} /> 24x7</span>}
+                         {ngo.isVerified && (
+                           <span className="badge" style={{ fontSize: 10, background: 'rgba(6,182,212,0.1)', color: '#06B6D4', border: '1px solid rgba(6,182,212,0.3)' }}>
+                             <ShieldCheck size={10} /> Verified Partner
+                           </span>
+                         )}
                          <span className="badge badge-purple" style={{ fontSize: 10 }}><ShieldCheck size={10} /> Verified</span>
                       </div>
                    </div>

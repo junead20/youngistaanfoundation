@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import Sidebar from '../components/Sidebar';
 import axios from 'axios';
-import { Users, Send, Star, Clock, ArrowLeft, AlertTriangle, ShieldCheck, CheckCircle, Loader } from 'lucide-react';
+import { Users, Send, Star, Clock, ArrowLeft, AlertTriangle, ShieldCheck, CheckCircle, Loader, X, PhoneCall } from 'lucide-react';
 
 const MOCK_MENTORS = [
   { _id: 'm1', name: 'Priya S.', expertise: ['Anxiety', 'Studies'], ageGroups: ['13-18', '18-25'], bio: '3 years supporting teens through academic pressure and anxiety.', rating: 4.9, isAvailable: true, sessions: 142 },
@@ -12,7 +12,7 @@ const MOCK_MENTORS = [
 ];
 
 export default function MentorChat() {
-  const { user, moodData } = useApp();
+  const { user, moodData, safetyPlan, saveSafetyPlan } = useApp();
   const [mentors, setMentors] = useState([]);
   const [selected, setSelected] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -20,6 +20,8 @@ export default function MentorChat() {
   const [loading, setLoading] = useState(true);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [showSafetyPlan, setShowSafetyPlan] = useState(false);
+  const [localPlan, setLocalPlan] = useState(safetyPlan || { people: '', activities: '', places: '' });
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -41,7 +43,8 @@ export default function MentorChat() {
         await axios.post('/api/mentor/request', { 
           mentorId: mentor._id,
           stressLevel: moodData?.stressLevel,
-          issue: moodData?.lastNote || 'General Support'
+          issue: moodData?.lastNote || 'General Support',
+          isEmergency: moodData?.label === 'Crisis' || moodData?.stressLevel >= 9
         }, { headers: { Authorization: `Bearer ${user?.token}` } });
       } catch {}
       setMessages([
@@ -173,14 +176,84 @@ export default function MentorChat() {
             <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 16, background: 'var(--bg-secondary)', zIndex: 10 }}>
               <button className="btn btn-secondary btn-sm" onClick={() => { setSelected(null); setMessages([]); }} style={{ gap: 6 }}><ArrowLeft size={16} /> Exit</button>
               <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg, #06B6D4, #0EA5E9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, color: 'white' }}>{selected.name[0]}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 800, fontSize: 16 }}>Talking to {selected.name}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10B981' }} className="animate-pulse" />
-                  <span style={{ fontSize: 11, color: '#10B981', fontWeight: 600 }}>Active Session</span>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: 16 }}>Talking to {selected.name}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10B981' }} className="animate-pulse" />
+                    <span style={{ fontSize: 11, color: '#10B981', fontWeight: 600 }}>Active Session</span>
+                  </div>
                 </div>
+                
+                {moodData?.label === 'Crisis' && (
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button 
+                      className="btn btn-secondary btn-sm" 
+                      onClick={() => setShowSafetyPlan(true)}
+                      style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid #10B981', color: '#10B981' }}
+                    >
+                      <ShieldCheck size={14} /> My Safety Plan
+                    </button>
+                    <button 
+                      className="btn btn-danger btn-sm animate-pulse" 
+                      onClick={() => {
+                        alert("Emergency Helplines (24/7):\n\nVandrevala Foundation: 9999 666 555\nAASRA: 9820 466 726\n\nMentor is also here to listen.");
+                      }}
+                      style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid #EF4444', color: '#EF4444' }}
+                    >
+                      <PhoneCall size={14} /> Emergency Resources
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
+
+            {/* Safety Plan Modal */}
+            {showSafetyPlan && (
+              <div style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+                <div className="glass animate-bounce-in" style={{ width: '100%', maxWidth: 500, padding: 32, borderRadius: 24, border: '1px solid #10B981' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                    <h2 style={{ fontSize: 20, fontWeight: 800, color: '#10B981' }}>My 3-Point Safety Plan</h2>
+                    <button onClick={() => setShowSafetyPlan(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={20} /></button>
+                  </div>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                    <div>
+                      <label className="label" style={{ color: 'var(--text-muted)', fontSize: 11, textTransform: 'uppercase', marginBottom: 8, display: 'block' }}>1. People I can call for help</label>
+                      <input 
+                        className="input" placeholder="Name or phone number..." 
+                        value={localPlan.people} onChange={e => setLocalPlan({...localPlan, people: e.target.value})} 
+                      />
+                    </div>
+                    <div>
+                      <label className="label" style={{ color: 'var(--text-muted)', fontSize: 11, textTransform: 'uppercase', marginBottom: 8, display: 'block' }}>2. Activities that calm me down</label>
+                      <input 
+                        className="input" placeholder="e.g. Breathing, Walking, Music..." 
+                        value={localPlan.activities} onChange={e => setLocalPlan({...localPlan, activities: e.target.value})} 
+                      />
+                    </div>
+                    <div>
+                      <label className="label" style={{ color: 'var(--text-muted)', fontSize: 11, textTransform: 'uppercase', marginBottom: 8, display: 'block' }}>3. My safe places</label>
+                      <input 
+                        className="input" placeholder="e.g. My room, Park, Library..." 
+                        value={localPlan.places} onChange={e => setLocalPlan({...localPlan, places: e.target.value})} 
+                      />
+                    </div>
+
+                    <button 
+                      className="btn btn-primary" 
+                      style={{ background: '#10B981', color: 'white', marginTop: 12, height: 48 }}
+                      onClick={() => {
+                        saveSafetyPlan(localPlan);
+                        setShowSafetyPlan(false);
+                      }}
+                    >
+                      Save My Resilience Plan
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div style={{ flex: 1, overflowY: 'auto', padding: '32px', display: 'flex', flexDirection: 'column', gap: 24, background: 'rgba(0,0,0,0.2)' }}>
               <div style={{ textAlign: 'center', margin: '0 0 16px' }}>

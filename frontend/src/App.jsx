@@ -7,6 +7,7 @@ import UserLogin from './pages/UserLogin';
 import VolunteerLogin from './pages/VolunteerLogin';
 import Dashboard from './pages/Dashboard';
 import Chatbot from './pages/Chatbot';
+import MiloChatbot from './pages/MiloChatbot';
 import MoodTracker from './pages/MoodTracker';
 import NGODirectory from './pages/NGODirectory';
 import Community from './pages/Community';
@@ -38,6 +39,7 @@ export default function App() {
       {/* User Protected */}
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/chat" element={<ProtectedRoute><Chatbot /></ProtectedRoute>} />
+      <Route path="/milo" element={<ProtectedRoute><MiloChatbot /></ProtectedRoute>} />
       <Route path="/mood" element={<ProtectedRoute><MoodTracker /></ProtectedRoute>} />
       <Route path="/ngo" element={<ProtectedRoute><NGODirectory /></ProtectedRoute>} />
       <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />

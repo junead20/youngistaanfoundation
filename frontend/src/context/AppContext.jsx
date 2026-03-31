@@ -7,6 +7,7 @@ export function AppProvider({ children }) {
   const [user, setUser] = useState(null);          // { userId, token, nickname, role }
   const [volunteer, setVolunteer] = useState(null);// Volunteer session
   const [stressLevel, setStressLevel] = useState(null); // 'Low' | 'Medium' | 'High'
+  const [safetyPlan, setSafetyPlan] = useState(() => JSON.parse(localStorage.getItem('mb_safety_plan')) || null);
 
   // Restore session from localStorage
   useEffect(() => {
@@ -60,13 +61,50 @@ export function AppProvider({ children }) {
     sessionStorage.removeItem('mb_mood');
   };
 
+  const guestLogin = (age = null) => {
+    const guestUser = {
+      userId: `ANON-${Math.random().toString(36).substr(2, 4).toUpperCase()}`,
+      nickname: 'Anonymous User',
+      age: age,
+      token: btoa(`anon-${Date.now()}`),
+      role: 'user',
+      isGuest: true
+    };
+    setUser(guestUser);
+    localStorage.setItem('mb_user', JSON.stringify(guestUser));
+    return guestUser;
+  };
+
+  const emergencyGuestLogin = (initialTranscript = '') => {
+    const guestUser = {
+      userId: `SOS-${Math.random().toString(36).substr(2, 4).toUpperCase()}`,
+      nickname: 'Guest in Crisis',
+      token: btoa(`guest-${Date.now()}`),
+      role: 'user',
+      isGuest: true
+    };
+    
+    setUser(guestUser);
+    localStorage.setItem('mb_user', JSON.stringify(guestUser));
+    
+    // Save immediate crisis mood
+    saveMood({ 
+      label: 'Crisis', 
+      emoji: '🆘', 
+      stressLevel: 10, 
+      lastNote: initialTranscript ? `VOICE_SOS: "${initialTranscript}"` : 'VOICE_EMERGENCY_DETECTED' 
+    });
+    
+    return guestUser;
+  };
+
   return (
     <AppContext.Provider value={{
       moodData, saveMood,
-      user, loginUser,
+      user, loginUser, guestLogin,
       volunteer, loginVolunteer,
       stressLevel, setStressLevel,
-      logout
+      logout, emergencyGuestLogin
     }}>
       {children}
     </AppContext.Provider>

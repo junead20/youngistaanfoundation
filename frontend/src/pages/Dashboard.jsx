@@ -14,6 +14,7 @@ import {
 function DailyCheckIn() {
   const [status, setStatus] = useState('idle'); // 'idle' | 'submitted'
   const [selected, setSelected] = useState(null);
+  const [streakData, setStreakData] = useState([]);
 
   const OPTIONS = [
     { label: 'Amazing', emoji: '✨', color: '#10B981', icon: Star },
@@ -22,58 +23,147 @@ function DailyCheckIn() {
     { label: 'Tough', emoji: '😔', color: '#EF4444', icon: CloudRain },
   ];
 
+  useEffect(() => {
+    const data = JSON.parse(localStorage.getItem('mb_streak_data')) || [];
+    setStreakData(data);
+    const today = new Date().toISOString().split('T')[0];
+    if (data.includes(today)) {
+      setStatus('submitted');
+      setSelected(OPTIONS[0]);
+    }
+  }, []);
+
   const handleCheckIn = (opt) => {
     setSelected(opt);
     setStatus('submitted');
-    // In a real app, send opt.label to backend here
-    setTimeout(() => {
-      // Keep it submitted for the session
-    }, 2000);
+    
+    // Save to local storage for "Snap Streak" feature
+    const today = new Date().toISOString().split('T')[0];
+    const newData = [...new Set([...streakData, today])];
+    setStreakData(newData);
+    localStorage.setItem('mb_streak_data', JSON.stringify(newData));
   };
 
-  if (status === 'submitted') {
-    return (
-      <div className="glass animate-fade-up" style={{ padding: 32, borderRadius: 20, textAlign: 'center', background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.2)', marginBottom: 28 }}>
-        <div style={{ display: 'inline-flex', padding: 12, borderRadius: '50%', background: 'rgba(16,185,129,0.1)', marginBottom: 16 }}>
-           <CheckCircle size={32} color="#10B981" />
-        </div>
-        <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>Thanks for sharing!</h3>
-        <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>
-           You marked your day as <strong style={{ color: selected.color }}>{selected.label} {selected.emoji}</strong>.
-           We've updated your recommendations.
-        </p>
-      </div>
-    );
+  // Compute Current Streak
+  let streakCount = 0;
+  const todayStr = new Date().toISOString().split('T')[0];
+  const yesterdayData = new Date();
+  yesterdayData.setDate(yesterdayData.getDate() - 1);
+  const yesterdayStr = yesterdayData.toISOString().split('T')[0];
+  
+  // Quick continuous streak calculation backwards from today/yesterday
+  let checkDate = new Date();
+  if (!streakData.includes(todayStr) && !streakData.includes(yesterdayStr)) {
+     streakCount = 0;
+  } else {
+     if (!streakData.includes(todayStr)) checkDate.setDate(checkDate.getDate() - 1); // Start counting from yesterday
+     
+     while (streakData.includes(checkDate.toISOString().split('T')[0])) {
+       streakCount++;
+       checkDate.setDate(checkDate.getDate() - 1);
+       if (streakCount > 365) break; // safety
+     }
+  }
+
+  // Generate full month calendar grid
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const firstDay = new Date(year, month, 1).getDay(); // 0 (Sun) to 6 (Sat)
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  
+  const calendarDays = [];
+  // Padding for the start of the month
+  for (let i = 0; i < firstDay; i++) {
+    calendarDays.push(null);
+  }
+  // Actual days
+  for (let i = 1; i <= daysInMonth; i++) {
+    const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+    calendarDays.push({
+      date: i,
+      completed: streakData.includes(dStr),
+      isToday: dStr === todayStr
+    });
   }
 
   return (
     <div className="glass animate-fade-up" style={{ padding: 24, borderRadius: 20, marginBottom: 28, border: '1px solid var(--border)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-        <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(124,58,237,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-           <Activity size={20} color="var(--purple-light)" />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: status === 'submitted' ? 0 : 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(124,58,237,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Activity size={20} color="var(--purple-light)" />
+          </div>
+          <div>
+            <h3 style={{ fontSize: 16, fontWeight: 800 }}>Daily Check-in</h3>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>How was your day so far?</p>
+          </div>
         </div>
-        <div>
-           <h3 style={{ fontSize: 16, fontWeight: 800 }}>Daily Check-in</h3>
-           <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>How was your day so far?</p>
+
+        {/* Snap Streak Counter! */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 100, background: streakCount > 0 ? 'rgba(245,158,11,0.1)' : 'rgba(255,255,255,0.05)', border: `1px solid ${streakCount > 0 ? 'rgba(245,158,11,0.3)' : 'var(--border)'}` }}>
+          <span style={{ fontSize: 16 }}>{streakCount > 0 ? '🔥' : '🧊'}</span>
+          <span style={{ fontSize: 13, fontWeight: 800, color: streakCount > 0 ? '#F59E0B' : 'var(--text-muted)' }}>
+            {streakCount} {streakCount === 1 ? 'Day' : 'Days'}
+          </span>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-        {OPTIONS.map(opt => (
-          <button 
-            key={opt.label}
-            onClick={() => handleCheckIn(opt)}
-            className="check-in-btn glass"
-            style={{ 
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '16px 8px', 
-              border: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)', borderRadius: 16,
-              transition: 'all 0.2s', cursor: 'pointer'
-            }}
-          >
-             <opt.icon size={24} color={opt.color} />
-             <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)' }}>{opt.label}</span>
-          </button>
-        ))}
+      {status === 'idle' && (
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          {OPTIONS.map(opt => (
+            <button
+              key={opt.label}
+              className="glass hover-glow"
+              onClick={() => handleCheckIn(opt)}
+              style={{ flex: 1, minWidth: 100, padding: '16px 12px', border: '1px solid var(--border)', borderRadius: 16, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, transition: 'all 0.2s', background: 'rgba(255,255,255,0.02)' }}
+            >
+              <opt.icon size={28} color={opt.color} />
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-secondary)' }}>{opt.label}</div>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {status === 'submitted' && (
+        <div style={{ textAlign: 'center', margin: '20px 0' }}>
+          <h4 style={{ fontSize: 15, fontWeight: 700, color: '#10B981', marginBottom: 4 }}>You checked in today! ✅</h4>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Come back tomorrow to keep your streak alive.</p>
+        </div>
+      )}
+
+      {/* Full Month Calendar Grid */}
+      <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        <h4 style={{ fontSize: 13, fontWeight: 800, marginBottom: 16, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+          {now.toLocaleString('default', { month: 'long', year: 'numeric' })}
+        </h4>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', marginBottom: '8px' }}>
+          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
+            <div key={i} style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)' }}>
+              {day}
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px 4px' }}>
+          {calendarDays.map((day, i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: 'center' }}>
+              {day ? (
+                <div style={{ 
+                  width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: day.completed ? 'rgba(245,158,11,0.2)' : (day.isToday ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.02)'),
+                  border: `2px solid ${day.completed ? '#F59E0B' : (day.isToday ? 'var(--text-primary)' : 'transparent')}`,
+                  color: day.completed ? '#FCD34D' : (day.isToday ? 'var(--text-primary)' : 'var(--text-muted)'),
+                  fontWeight: day.isToday ? 900 : 700, fontSize: 13, transition: 'all 0.3s',
+                  boxShadow: day.completed ? '0 0 10px rgba(245,158,11,0.3)' : 'none'
+                }}>
+                  {day.completed ? '🔥' : day.date}
+                </div>
+              ) : (
+                <div style={{ width: 32, height: 32 }} />
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

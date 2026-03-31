@@ -23,6 +23,7 @@ app.use('/api/chat', require('./routes/chat'));
 app.use('/api/mentor', require('./routes/mentor'));
 app.use('/api/ngo', require('./routes/ngo'));
 app.use('/api/community', require('./routes/community'));
+app.use('/api/dailylog', require('./routes/dailylog'));
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'Manobandhu API running ✅' }));
