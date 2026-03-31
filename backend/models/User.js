@@ -12,6 +12,12 @@ const UserSchema = new mongoose.Schema({
     description: String,
     timestamp: { type: Date, default: Date.now }
   }],
+  assessments: [{
+    marks: Number,
+    notes: String,
+    volunteer_name: String,
+    timestamp: { type: Date, default: Date.now }
+  }],
   created_at: { type: Date, default: Date.now }
 });
 

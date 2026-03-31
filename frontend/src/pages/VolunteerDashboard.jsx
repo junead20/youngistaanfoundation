@@ -40,6 +40,25 @@ export default function VolunteerDashboard() {
         </div>
       </div>
 
+      {/* ANALYSIS SUMMARY CARDS */}
+      <div className="volunteer-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', marginBottom: 40 }}>
+         <div className="card" style={{ borderLeft: '4px solid var(--danger)' }}>
+            <h4 style={{ margin: 0, fontSize: 13, color: 'var(--text-tertiary)' }}>CRITICAL PRIORITY</h4>
+            <h2 style={{ margin: '8px 0 0', color: 'var(--danger)' }}>{entries.filter(e => e.color === 'critical').length}</h2>
+            <p style={{ margin: '4px 0 0', fontSize: 11 }}>Require immediate connect</p>
+         </div>
+         <div className="card" style={{ borderLeft: '4px solid var(--palette-purple)' }}>
+            <h4 style={{ margin: 0, fontSize: 13, color: 'var(--text-tertiary)' }}>ACTIVE SESSIONS</h4>
+            <h2 style={{ margin: '8px 0 0' }}>{entries.length}</h2>
+            <p style={{ margin: '4px 0 0', fontSize: 11 }}>Currently in mood cycle</p>
+         </div>
+         <div className="card" style={{ borderLeft: '4px solid var(--success)' }}>
+            <h4 style={{ margin: 0, fontSize: 13, color: 'var(--text-tertiary)' }}>PLATFORM HEALTH</h4>
+            <h2 style={{ margin: '8px 0 0', color: 'var(--success)' }}>{entries.length ? (entries.reduce((a,b)=>a+b.latestScore, 0)/entries.length * 10).toFixed(0) : '0'}%</h2>
+            <p style={{ margin: '4px 0 0', fontSize: 11 }}>Avg Mental Wellness Score</p>
+         </div>
+      </div>
+
       <div className="card">
         <h3 className="card-title" style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
            <Users size={20} color="var(--palette-purple)" /> Priority Active Users

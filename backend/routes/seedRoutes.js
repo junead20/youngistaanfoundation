@@ -54,7 +54,12 @@ router.post("/", async (req, res) => {
       { name: "Art & Crafts Club 🎨", description: "For anyone who loves making things with their hands. Share your creations!", member_count: 142, tags: ["art", "painting", "DIY"] },
       { name: "Music & Singing Vibe 🎵", description: "Drop your favorite playlists, sing covers, or just listen together.", member_count: 310, tags: ["music", "singing", "bands"] },
       { name: "Code Jam Space 💻", description: "Building apps, games, or just learning HTML? Join us.", member_count: 85, tags: ["tech", "coding", "games"] },
-      { name: "Midnight Thoughts ✨", description: "Share your poems, short stories, or just random midnight thoughts.", member_count: 198, tags: ["writing", "poetry", "books"] }
+      { name: "Midnight Thoughts ✨", description: "Share your poems, short stories, or just random midnight thoughts.", member_count: 198, tags: ["writing", "poetry", "books"] },
+      { name: "Exam Stress Haven 📚", description: "Venting about finals? Need study tips? We've got you.", member_count: 520, tags: ["school", "stress", "support"] },
+      { name: "Anxiety Warriors 🛡️", description: "A safe space for those dealing with anxiety to share techniques and support.", member_count: 425, tags: ["mentalhealth", "anxiety", "support"] },
+      { name: "Success Stories 🎊", description: "Celebrate your small or big wins! Good vibes only.", member_count: 367, tags: ["joy", "win", "positivity"] },
+      { name: "Daily Doodles 🖍️", description: "A quick daily drawing challenge to spark your creativity.", member_count: 154, tags: ["art", "fun", "creative"] },
+      { name: "Late Night Loneliness 🌙", description: "For the 'I can't sleep and I feel alone' moments. You are seen.", member_count: 612, tags: ["lonely", "night", "support"] }
     ];
     await Community.insertMany(communities);
 

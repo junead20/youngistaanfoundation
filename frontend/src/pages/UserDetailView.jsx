@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, MessageSquare, AlertTriangle, CheckCircle, Clock, ShieldCheck, UserCircle } from 'lucide-react';
+import { ArrowLeft, MessageSquare, AlertTriangle, CheckCircle, Clock, ShieldCheck, UserCircle, FileText } from 'lucide-react';
 
 export default function UserDetailView() {
   const { id } = useParams();
@@ -12,6 +12,9 @@ export default function UserDetailView() {
 
   const [userData, setUserData] = useState(null);
   const [chats, setChats] = useState([]);
+  const [notes, setNotes] = useState('');
+  const [marks, setMarks] = useState(50);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -23,6 +26,8 @@ export default function UserDetailView() {
         const data = await res.json();
         setUserData(data.user);
         setChats(data.recentChats);
+        setNotes('');
+        setMarks(50);
       } catch (err) {
         console.error(err);
       }
@@ -154,6 +159,104 @@ export default function UserDetailView() {
          </div>
 
       </div>
+
+      {/* VOLUNTEER ACTION CENTER: ASSESSMENT & PROGRESS UPLOAD */}
+      <div className="card" style={{ marginTop: 32, borderTop: '4px solid var(--primary)' }}>
+         <h3 className="card-title" style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <ShieldCheck size={20} color="var(--primary)" /> Professional Action Center
+         </h3>
+         
+         <div className="volunteer-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: 32 }}>
+            {/* UPLOAD FORM */}
+            <div>
+               <h4 style={{ fontSize: 14, marginBottom: 16 }}>Upload Progress Report</h4>
+               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div>
+                     <label style={{ fontSize: 12, color: 'var(--text-tertiary)', display: 'block', marginBottom: 8 }}>
+                        Wellness Assessment Marks (0-100)
+                     </label>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                        <input 
+                           type="range" min="0" max="100" 
+                           style={{ flex: 1, accentColor: 'var(--primary)' }}
+                           value={marks} onChange={(e) => setMarks(e.target.value)}
+                        />
+                        <span style={{ fontWeight: 700, fontSize: 18, color: 'var(--primary)', width: 40 }}>{marks}</span>
+                     </div>
+                  </div>
+
+                  <div>
+                     <label style={{ fontSize: 12, color: 'var(--text-tertiary)', display: 'block', marginBottom: 8 }}>
+                        Clinical/Progress Notes
+                     </label>
+                     <textarea 
+                        className="form-input"
+                        placeholder="Describe user progress, concerns, or specific feedback..."
+                        style={{ minHeight: 120, borderRadius: 12, fontSize: 13, resize: 'none' }}
+                        value={notes} onChange={(e) => setNotes(e.target.value)}
+                     />
+                  </div>
+
+                  <button 
+                     className="btn btn-primary" 
+                     disabled={submitting || !notes.trim()}
+                     onClick={async () => {
+                        setSubmitting(true);
+                        try {
+                           const res = await fetch(`/api/volunteers/user/${id}/assessment`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ marks, notes, volunteer_name: localStorage.getItem('name') })
+                           });
+                           if (res.ok) {
+                              const updated = await res.json();
+                              setUserData(updated.user);
+                              setToast('Progress report uploaded successfully.');
+                              setNotes('');
+                              setMarks(50);
+                           }
+                        } catch (err) { console.error(err); }
+                        setSubmitting(false);
+                        setTimeout(() => setToast(''), 3000);
+                     }}
+                  >
+                     {submitting ? 'Uploading...' : 'Upload Progress Report'}
+                  </button>
+               </div>
+            </div>
+
+            {/* ASSESSMENT HISTORY */}
+            <div style={{ borderLeft: '1px solid var(--border)', paddingLeft: 32 }}>
+               <h4 style={{ fontSize: 14, marginBottom: 16 }}>Assessment History</h4>
+               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 350, overflowY: 'auto' }}>
+                  {userData?.assessments?.length > 0 ? (
+                     userData.assessments.slice().reverse().map((asm, idx) => (
+                        <div key={idx} className="observation-card" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
+                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                              <span className="badge small" style={{ background: 'var(--primary-light)', color: 'var(--primary-dark)' }}>
+                                 Score: {asm.marks}/100
+                              </span>
+                              <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+                                 {new Date(asm.timestamp).toLocaleDateString()}
+                              </span>
+                           </div>
+                           <p style={{ margin: 0, fontSize: 12, fontStyle: 'italic', color: 'var(--text-secondary)' }}>"{asm.notes}"</p>
+                           <div style={{ marginTop: 8, fontSize: 10, color: 'var(--text-tertiary)', textAlign: 'right' }}>
+                              — {asm.volunteer_name}
+                           </div>
+                        </div>
+                     ))
+                  ) : (
+                     <div style={{ textAlign: 'center', opacity: 0.5, padding: '40px 0' }}>
+                        <FileText size={32} style={{ marginBottom: 12 }} />
+                        <p style={{ fontSize: 12 }}>No previous assessments on file.</p>
+                     </div>
+                  )}
+               </div>
+            </div>
+         </div>
+      </div>
+
     </div>
   );
 }

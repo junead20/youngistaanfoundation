@@ -30,7 +30,6 @@ function App() {
         {/* PUBLIC — no login needed */}
         <Route path="/" element={<Landing />} />
         <Route path="/mood-check" element={<MoodCheck />} />
-        <Route path="/activities" element={<Activities />} />
         <Route path="/breathe" element={<BreatheZone />} />
 
         {/* AUTH PAGES */}
@@ -42,6 +41,7 @@ function App() {
         {/* PROTECTED — login required */}
         <Route element={<Layout />}>
           <Route path="/dashboard/user" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
+          <Route path="/activities" element={<ProtectedRoute><Activities /></ProtectedRoute>} />
           <Route path="/communities" element={<ProtectedRoute><Communities /></ProtectedRoute>} />
           <Route path="/milo" element={<ProtectedRoute><Milo /></ProtectedRoute>} />
           <Route path="/dashboard/volunteer" element={<ProtectedRoute role="volunteer"><VolunteerDashboard /></ProtectedRoute>} />

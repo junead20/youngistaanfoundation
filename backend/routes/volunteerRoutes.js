@@ -178,4 +178,25 @@ router.get("/user-chat/:id", async (req, res) => {
   }
 });
 
+// Save volunteer assessment (marks and notes) for a user
+router.post("/user/:id/assessment", async (req, res) => {
+  try {
+    const { marks, notes, volunteer_name } = req.body;
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    user.assessments.push({
+      marks: Number(marks),
+      notes,
+      volunteer_name: volunteer_name || "Anonymous Volunteer",
+      timestamp: new Date()
+    });
+
+    await user.save();
+    res.json({ message: "Assessment saved successfully", user });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;
