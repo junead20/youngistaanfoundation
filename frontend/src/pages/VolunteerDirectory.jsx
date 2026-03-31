@@ -12,23 +12,23 @@ export default function VolunteerDirectory() {
   useEffect(() => {
     if (!volunteer?.token) return;
 
-    axios.get('/api/volunteer/directory', { 
-      headers: { Authorization: `Bearer ${volunteer.token}` } 
+    axios.get('/api/volunteer/directory', {
+      headers: { Authorization: `Bearer ${volunteer.token}` }
     })
-    .then(res => {
-      // Limit to 4 volunteers for now as requested
-      setVolunteers(res.data.directory.slice(0, 4));
-      setLoading(false);
-    })
-    .catch(err => {
-      console.error(err);
-      setLoading(false);
-    });
+      .then(res => {
+        // Limit to 4 volunteers for now as requested
+        setVolunteers(res.data.directory.slice(0, 4));
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
   }, [volunteer]);
 
   const handleConnect = (v) => {
-    const subject = encodeURIComponent("YuvaPulse: Connection Request from Fellow Mentor");
-    const body = encodeURIComponent(`Hi ${v.name},\n\nI'm ${volunteer?.name}, a fellow mentor on the YuvaPulse platform. I saw your profile in the directory and would love to connect and share insights on our mentoring experiences!\n\nBest regards,\n${volunteer?.name}`);
+    const subject = encodeURIComponent("Manobandhu: Connection Request from Fellow Mentor");
+    const body = encodeURIComponent(`Hi ${v.name},\n\nI'm ${volunteer?.name}, a fellow mentor on the Manobandhu platform. I saw your profile in the directory and would love to connect and share insights on our mentoring experiences!\n\nBest regards,\n${volunteer?.name}`);
     window.location.href = `mailto:${v.email}?subject=${subject}&body=${body}`;
   };
 
@@ -48,10 +48,10 @@ export default function VolunteerDirectory() {
               <h1 className="section-title" style={{ margin: 0, fontSize: 32, fontWeight: 900 }}>Co-Volunteer Directory</h1>
               <p className="section-subtitle" style={{ margin: 0, color: 'var(--text-muted)' }}>Collaborate with the elite network of psychological mentors.</p>
             </div>
-            
+
             <div className="glass" style={{ padding: '12px 24px', borderRadius: 20, display: 'flex', alignItems: 'center', gap: 12, border: '1px solid var(--border)' }}>
-               <Shield size={18} color="var(--purple-primary)" />
-               <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Verified Network</span>
+              <Shield size={18} color="var(--purple-primary)" />
+              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Verified Network</span>
             </div>
           </div>
 
@@ -59,7 +59,7 @@ export default function VolunteerDirectory() {
             {volunteers.map(v => (
               <div key={v._id} className="glass hover-lift" style={{ padding: 32, borderRadius: 32, position: 'relative', overflow: 'hidden', border: '1px solid var(--border)' }}>
                 <div style={{ position: 'absolute', top: 0, right: 0, width: 140, height: 140, background: 'radial-gradient(circle, rgba(103, 232, 249, 0.08) 0%, transparent 70%)', zIndex: 0 }} />
-                
+
                 <div style={{ position: 'relative', zIndex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 24 }}>
                     <div style={{ width: 64, height: 64, borderRadius: 20, background: 'linear-gradient(135deg, var(--teal-primary), var(--purple-primary))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 24, color: 'white', boxShadow: '0 8px 16px rgba(103, 232, 249, 0.2)' }}>
@@ -73,7 +73,7 @@ export default function VolunteerDirectory() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24, padding: '12px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: 16, fontSize: 13, color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
                     <Mail size={16} color="var(--teal-primary)" /> {v.email || 'Private Email'}
                   </div>
@@ -92,10 +92,10 @@ export default function VolunteerDirectory() {
                     </div>
                   </div>
 
-                  <button 
+                  <button
                     onClick={() => handleConnect(v)}
-                    className="btn btn-primary" 
-                    style={{ 
+                    className="btn btn-primary"
+                    style={{
                       width: '100%', height: 56, borderRadius: 16, background: 'var(--teal-primary)', border: 'none',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontSize: 16, fontWeight: 800,
                       boxShadow: '0 8px 20px rgba(103, 232, 249, 0.2)'
@@ -107,7 +107,7 @@ export default function VolunteerDirectory() {
                 </div>
               </div>
             ))}
-            
+
             {volunteers.length === 0 && (
               <div style={{ gridColumn: '1 / -1', padding: 80, textAlign: 'center', className: 'glass', borderRadius: 32 }}>
                 <Globe size={48} color="var(--border)" style={{ marginBottom: 24 }} />
@@ -116,7 +116,7 @@ export default function VolunteerDirectory() {
               </div>
             )}
           </div>
-          
+
           {volunteers.length > 0 && (
             <div style={{ marginTop: 40, textAlign: 'center' }}>
               <button disabled className="btn btn-outline" style={{ opacity: 0.5, cursor: 'not-allowed', gap: 8 }}>

@@ -26,7 +26,6 @@ function ProtectedRoute({ children }) {
 function VolunteerRoute({ children }) {
   const { volunteer } = useApp();
   if (!volunteer) return <Navigate to="/volunteer-login" replace />;
-  if (volunteer.role === 'ngo') return <Navigate to="/ngo-dashboard" replace />;
   return children;
 }
 
@@ -60,6 +59,8 @@ export default function App() {
 
       {/* NGO Protected */}
       <Route path="/ngo-dashboard" element={<NgoRoute><NGODashboard /></NgoRoute>} />
+      <Route path="/volunteer-dashboard" element={<NgoRoute><VolunteerDashboard /></NgoRoute>} />
+      <Route path="/mentee-analysis" element={<NgoRoute><MenteeAnalysis /></NgoRoute>} />
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />

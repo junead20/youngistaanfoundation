@@ -13,7 +13,7 @@ export default function PreLoginMood() {
           <div style={{ width: 32, height: 32, borderRadius: 10, background: 'linear-gradient(135deg, #ffd8b8, #cde3d6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Heart size={18} color="#2f2a28" />
           </div>
-          YuvaPulse
+          Manobandhu
         </div>
         <div className="links">
           <a href="#about">About</a>

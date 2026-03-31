@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext';
 import Sidebar from '../components/Sidebar';
 import axios from 'axios';
 import {
-  Building2, Users, PieChart, TrendingUp, Heart
+  Building2, Users, PieChart, TrendingUp, Heart, Mail
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell
@@ -66,7 +66,7 @@ export default function NGODashboard() {
       <Sidebar />
       <main className="main-content">
         <div className="animate-fade-up">
-          <div style={{ marginBottom: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ marginBottom: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
             <div>
               <h1 className="section-title">
                 <Building2 size={22} style={{ display: 'inline', marginRight: 10, color: '#06B6D4' }} />
@@ -74,9 +74,30 @@ export default function NGODashboard() {
               </h1>
               <p className="section-subtitle">Real-time platform insights and volunteer monitoring.</p>
             </div>
-            <div style={{ padding: '8px 16px', background: 'rgba(6, 182, 212, 0.1)', color: '#06B6D4', borderRadius: 99, fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#06B6D4' }} />
-              Admin Portal
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <a
+                href={`mailto:${volunteer?.email || 'ngo.admin@example.com'}`}
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: 'rgba(6, 182, 212, 0.12)',
+                  border: '1px solid rgba(6, 182, 212, 0.3)',
+                  color: '#06B6D4',
+                  textDecoration: 'none',
+                  boxShadow: '0 6px 16px rgba(6, 182, 212, 0.15)'
+                }}
+                title={`Email ${volunteer?.name || 'NGO Admin'}`}
+              >
+                <Mail size={18} />
+              </a>
+              <div style={{ padding: '8px 16px', background: 'rgba(6, 182, 212, 0.1)', color: '#06B6D4', borderRadius: 99, fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#06B6D4' }} />
+                Admin Portal
+              </div>
             </div>
           </div>
 

@@ -5,14 +5,14 @@ import axios from 'axios';
 import {
   Shield, Users, PieChart, TrendingUp, Bell, Heart
 } from 'lucide-react';
-import { 
+import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell
 } from 'recharts';
 
 export default function VolunteerDashboard() {
   const { volunteer } = useApp();
   const [loading, setLoading] = useState(true);
-  
+
   const [stats, setStats] = useState({
     totalMentees: 0,
     activeInteractions: 0,
@@ -27,7 +27,7 @@ export default function VolunteerDashboard() {
     if (!volunteer?.token) return;
 
     const config = { headers: { Authorization: `Bearer ${volunteer.token}` } };
-    
+
     Promise.all([
       axios.get('/api/volunteer/dashboard-stats', config),
       axios.get('/api/volunteer/mentees', config),
@@ -113,7 +113,7 @@ export default function VolunteerDashboard() {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 24, marginBottom: 32 }}>
-            
+
             {/* Charts Analysis */}
             <div className="glass" style={{ padding: 24, borderRadius: 20 }}>
               <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 4 }}>Mentee Mood Breakdown</h3>
@@ -140,7 +140,7 @@ export default function VolunteerDashboard() {
                 {stats.unreadAlerts > 0 && <span style={{ padding: '2px 8px', borderRadius: 99, background: '#EF4444', color: 'white', fontSize: 11, fontWeight: 800 }}>{stats.unreadAlerts} New</span>}
               </div>
               <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>Unread alerts demanding mentor attention.</p>
-              
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 260, overflowY: 'auto' }}>
                 {notifications.length === 0 ? (
                   <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)' }}>No unread alerts left!</div>
@@ -151,7 +151,7 @@ export default function VolunteerDashboard() {
                       <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>{n.message}</div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Triggered recently</div>
                     </div>
-                    <button 
+                    <button
                       onClick={() => markRead(n._id)}
                       style={{ fontSize: 11, padding: '6px 10px', borderRadius: 8, background: 'var(--surface-light)', color: 'var(--text-primary)', border: 'none', cursor: 'pointer', fontWeight: 600 }}
                     >
@@ -183,6 +183,7 @@ export default function VolunteerDashboard() {
                       <td colSpan={4} style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}>No mentees in the database.</td>
                     </tr>
                   ) : mentees.map((m, i) => {
+                    if (!m.userId) return null; // Skip entries without userId (shouldn't happen ideally)
                     const isAtRisk = m.latestMood?.stressLevel >= 7;
                     return (
                       <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
