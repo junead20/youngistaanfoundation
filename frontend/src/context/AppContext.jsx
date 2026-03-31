@@ -3,30 +3,33 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const AppContext = createContext(null);
 
 export function AppProvider({ children }) {
-  const [moodData, setMoodData] = useState(null); // Pre-login mood
-  const [user, setUser] = useState(null);          // { userId, token, nickname, role }
-  const [volunteer, setVolunteer] = useState(null);// Volunteer session
-  const [stressLevel, setStressLevel] = useState(null); // 'Low' | 'Medium' | 'High'
-
-  // Restore session from localStorage
-  useEffect(() => {
-    const savedUser = localStorage.getItem('mb_user');
-    const savedVolunteer = localStorage.getItem('mb_volunteer');
-    if (savedUser) setUser(JSON.parse(savedUser));
-    if (savedVolunteer) setVolunteer(JSON.parse(savedVolunteer));
-
-    // Restore pre-login mood from sessionStorage
+  const [moodData, setMoodData] = useState(() => {
+    const saved = sessionStorage.getItem('mb_mood');
+    return saved ? JSON.parse(saved) : null;
+  });
+  
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem('mb_user');
+    return saved ? JSON.parse(saved) : null;
+  });
+  
+  const [volunteer, setVolunteer] = useState(() => {
+    const saved = localStorage.getItem('mb_volunteer');
+    return saved ? JSON.parse(saved) : null;
+  });
+  
+  const [stressLevel, setStressLevel] = useState(() => {
     const savedMood = sessionStorage.getItem('mb_mood');
     if (savedMood) {
       const data = JSON.parse(savedMood);
-      setMoodData(data);
       if (data.stressLevel) {
-        if (data.stressLevel <= 3) setStressLevel('Low');
-        else if (data.stressLevel <= 6) setStressLevel('Medium');
-        else setStressLevel('High');
+        if (data.stressLevel <= 3) return 'Low';
+        if (data.stressLevel <= 6) return 'Medium';
+        return 'High';
       }
     }
-  }, []);
+    return null;
+  });
 
   const saveMood = (data) => {
     setMoodData(data);
