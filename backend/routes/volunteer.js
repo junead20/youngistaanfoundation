@@ -169,6 +169,64 @@ const volunteerOnly = (req, res, next) => {
   });
 };
 
+// GET /api/volunteer/dashboard-stats - Fetch aggregate stats for volunteer dashboard
+router.get('/dashboard-stats', volunteerOnly, async (req, res) => {
+  try {
+    const User = require('../models/User');
+    const MoodEntry = require('../models/MoodEntry');
+    const Notification = require('../models/Notification');
+
+    const totalMentees = await User.countDocuments();
+    
+    const unreadAlerts = await Notification.countDocuments({ 
+      volunteerId: req.user.volunteerId,
+      isRead: false 
+    });
+
+    const recentMoods = await MoodEntry.find().sort({ timestamp: -1 }).limit(200);
+    
+    let highStressCount = 0;
+    const moodDistribution = [
+      { name: 'Happy', value: 0 },
+      { name: 'Neutral', value: 0 },
+      { name: 'Sad', value: 0 },
+      { name: 'Stressed', value: 0 }
+    ];
+    
+    recentMoods.forEach(entry => {
+      if (entry.stressLevel && entry.stressLevel >= 7) highStressCount++;
+      const bucket = moodDistribution.find(m => m.name === entry.emotion);
+      if (bucket) bucket.value++;
+    });
+
+    res.json({
+      success: true,
+      stats: {
+        totalMentees,
+        highStressAlerts: highStressCount,
+        unreadAlerts,
+        activeInteractions: Math.max(0, Math.floor(totalMentees * 1.2))
+      },
+      moodDistribution
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// GET /api/volunteer/directory - Fetch directory of co-volunteers
+router.get('/directory', volunteerOnly, async (req, res) => {
+  try {
+    const VolunteerModel = require('../models/Volunteer');
+    const directory = await VolunteerModel.find({ role: { $ne: 'ngo' } })
+      .select('-password -__v')
+      .sort({ createdAt: -1 });
+    res.json({ success: true, directory });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // GET /api/volunteer/mentees - Fetch all mentees with latest mood
 router.get('/mentees', volunteerOnly, async (req, res) => {
   try {

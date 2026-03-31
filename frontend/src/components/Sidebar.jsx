@@ -10,7 +10,10 @@ import {
 const NAV_ITEMS = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', role: 'user' },
   { path: '/volunteer-dashboard', icon: Shield, label: 'Volunteer Panel', role: 'volunteer' },
-  { path: '/community', icon: Globe, label: 'Community' },
+  { path: '/mentee-analysis', icon: Activity, label: 'Mentee Analysis', role: 'volunteer' },
+  { path: '/volunteer-directory', icon: Users, label: 'Co-Volunteers', role: 'volunteer' },
+  { path: '/ngo-dashboard', icon: Building2, label: 'NGO Dashboard', role: 'ngo' },
+  { path: '/community', icon: Globe, label: 'Community', role: 'volunteer' },
   { path: '/chat', icon: MessageCircle, label: 'AI Chat', isPublic: true },
   { path: '/stress-relief', icon: Wind, label: 'Stress Relief', isPublic: true },
   { path: '/mood', icon: Heart, label: 'Mood Tracker', isPublic: true },
@@ -35,10 +38,15 @@ export default function Sidebar() {
   };
 
   const navItems = NAV_ITEMS.filter(item => {
+    if (volunteer?.role === 'ngo') {
+      return item.role === 'ngo'; // Show ONLY 'NGO Dashboard' to the NGO role
+    }
+    if (volunteer) {
+      return item.role === 'volunteer'; // Show ONLY volunteer tools to regular volunteers
+    }
     if (item.isPublic) return true;
-    if (volunteer && item.role === 'volunteer') return true;
     if (user && item.role === 'user') return true;
-    if (!item.role && (user || volunteer)) return true;
+    if (!item.role && user) return true;
     return false;
   });
 
@@ -72,14 +80,14 @@ export default function Sidebar() {
         <div className="glass" style={{ padding: '12px 16px', borderRadius: 12, marginBottom: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
             <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--purple-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>
-              {volunteer ? (volunteer.name?.[0] || 'V') : (user?.nickname?.[0] || 'U')}
+              {volunteer ? (volunteer.role === 'ngo' ? 'A' : (volunteer.name?.[0] || 'V')) : (user?.nickname?.[0] || 'U')}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {volunteer ? volunteer.name : (user?.nickname || 'Anonymous')}
               </div>
               <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
-                {volunteer ? 'Volunteer' : user?.userId}
+                {volunteer ? (volunteer.role === 'ngo' ? 'Admin' : 'Volunteer') : user?.userId}
               </div>
             </div>
           </div>

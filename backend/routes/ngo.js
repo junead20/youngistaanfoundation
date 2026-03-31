@@ -1,5 +1,20 @@
 const express = require('express');
 const router = express.Router();
+const Volunteer = require('../models/Volunteer');
+const User = require('../models/User');
+const MoodEntry = require('../models/MoodEntry');
+
+// Middleware for NGO access
+const ngoOnly = (req, res, next) => {
+  const auth = require('../middleware/auth');
+  auth(req, res, () => {
+    if (req.user && req.user.role === 'ngo') {
+      next();
+    } else {
+      res.status(403).json({ message: 'NGO access only' });
+    }
+  });
+};
 
 // Mock data for NGOS
 const NGO_RESOURCES = {
@@ -18,7 +33,7 @@ const NGO_RESOURCES = {
 
 /**
  * @route GET /api/ngo
- * @desc Get list of NGOs and resources
+ * @desc Get list of NGOs and resources (Public/All Users)
  */
 router.get('/', (req, res) => {
   try {
@@ -26,6 +41,62 @@ router.get('/', (req, res) => {
     res.json({ success: true, ngos: allNgos });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+/**
+ * @route GET /api/ngo/admin/stats
+ * @desc Get platform-wide analytics for NGO dashboard
+ */
+router.get('/admin/stats', ngoOnly, async (req, res) => {
+  try {
+    const totalVolunteers = await Volunteer.countDocuments({ role: 'volunteer' });
+    const totalUsers = await User.countDocuments();
+    
+    // Recent moods logic to compute high stress users
+    const recentMoods = await MoodEntry.find().sort({ timestamp: -1 }).limit(200);
+    
+    let highStress = 0;
+    const moodDistribution = [
+      { name: 'Happy', value: 0 },
+      { name: 'Neutral', value: 0 },
+      { name: 'Sad', value: 0 },
+      { name: 'Stressed', value: 0 }
+    ];
+    
+    recentMoods.forEach(entry => {
+      if (entry.stressLevel && entry.stressLevel >= 7) highStress++;
+      const bucket = moodDistribution.find(m => m.name === entry.emotion);
+      if (bucket) bucket.value++;
+    });
+
+    res.json({
+      success: true,
+      stats: {
+        totalVolunteers,
+        totalUsers,
+        highStressAlerts: highStress,
+        activeInteractions: Math.max(0, Math.floor(totalVolunteers * 1.5))
+      },
+      moodDistribution
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+/**
+ * @route GET /api/ngo/admin/volunteers
+ * @desc Get a structured list of all registered volunteers
+ */
+router.get('/admin/volunteers', ngoOnly, async (req, res) => {
+  try {
+    const volunteers = await Volunteer.find({ role: { $ne: 'ngo' } }) // exclude admins
+      .select('-password -__v')
+      .sort({ createdAt: -1 });
+    res.json({ success: true, volunteers });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
 

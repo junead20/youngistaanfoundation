@@ -67,8 +67,17 @@ export default function VolunteerLogin() {
     try {
       const endpoint = isRegistering ? '/api/volunteer/register' : '/api/volunteer/login';
       const res = await axios.post(endpoint, formData);
-      loginVolunteer(res.data);
-      navigate('/volunteer-dashboard');
+      const authData = {
+        ...res.data.volunteer,
+        token: res.data.token
+      };
+      loginVolunteer(authData);
+      
+      if (authData.role === 'ngo') {
+        navigate('/ngo-dashboard');
+      } else {
+        navigate('/volunteer-dashboard');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Authentication failed. Please check your credentials.');
     } finally {
@@ -85,8 +94,17 @@ export default function VolunteerLogin() {
         name: 'Mock Google Volunteer',
         googleId: 'mock-google-id-123456789'
       });
-      loginVolunteer(res.data);
-      navigate('/volunteer-dashboard');
+      const authData = {
+        ...res.data.volunteer,
+        token: res.data.token
+      };
+      loginVolunteer(authData);
+      
+      if (authData.role === 'ngo') {
+        navigate('/ngo-dashboard');
+      } else {
+        navigate('/volunteer-dashboard');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Google Auth simulation failed.');
     } finally {

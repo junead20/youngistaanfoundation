@@ -14,6 +14,8 @@ import VolunteerDashboard from './pages/VolunteerDashboard';
 import MentorChat from './pages/MentorChat';
 import NGODashboard from './pages/NGODashboard';
 import StressRelief from './pages/StressRelief';
+import MenteeAnalysis from './pages/MenteeAnalysis';
+import VolunteerDirectory from './pages/VolunteerDirectory';
 
 function ProtectedRoute({ children }) {
   const { user, volunteer } = useApp();
@@ -24,6 +26,13 @@ function ProtectedRoute({ children }) {
 function VolunteerRoute({ children }) {
   const { volunteer } = useApp();
   if (!volunteer) return <Navigate to="/volunteer-login" replace />;
+  if (volunteer.role === 'ngo') return <Navigate to="/ngo-dashboard" replace />;
+  return children;
+}
+
+function NgoRoute({ children }) {
+  const { volunteer } = useApp();
+  if (!volunteer || volunteer.role !== 'ngo') return <Navigate to="/volunteer-login" replace />;
   return children;
 }
 
@@ -46,7 +55,11 @@ export default function App() {
 
       {/* Volunteer Protected */}
       <Route path="/volunteer-dashboard" element={<VolunteerRoute><VolunteerDashboard /></VolunteerRoute>} />
-      <Route path="/ngo-dashboard" element={<ProtectedRoute><NGODashboard /></ProtectedRoute>} />
+      <Route path="/mentee-analysis" element={<VolunteerRoute><MenteeAnalysis /></VolunteerRoute>} />
+      <Route path="/volunteer-directory" element={<VolunteerRoute><VolunteerDirectory /></VolunteerRoute>} />
+
+      {/* NGO Protected */}
+      <Route path="/ngo-dashboard" element={<NgoRoute><NGODashboard /></NgoRoute>} />
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
