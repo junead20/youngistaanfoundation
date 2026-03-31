@@ -5,7 +5,7 @@ import axios from 'axios';
 import {
   Building2, Users, PieChart, TrendingUp, Heart
 } from 'lucide-react';
-import { 
+import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell
 } from 'recharts';
 
@@ -25,7 +25,7 @@ export default function NGODashboard() {
     if (!volunteer?.token) return;
 
     const config = { headers: { Authorization: `Bearer ${volunteer.token}` } };
-    
+
     Promise.all([
       axios.get('/api/ngo/admin/stats', config),
       axios.get('/api/ngo/admin/volunteers', config)
@@ -99,7 +99,7 @@ export default function NGODashboard() {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 24, marginBottom: 32 }}>
-            
+
             {/* Charts Analysis */}
             <div className="glass" style={{ padding: 24, borderRadius: 20 }}>
               <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 4 }}>Platform Health & Mood</h3>
@@ -123,22 +123,26 @@ export default function NGODashboard() {
             <div className="glass" style={{ padding: 24, borderRadius: 20 }}>
               <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 4 }}>Volunteer Pulse</h3>
               <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>Recently added or active volunteers.</p>
-              
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 260, overflowY: 'auto' }}>
-                {volunteers.slice(0, 5).map(v => (
-                  <div key={v._id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: 12 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, var(--purple-primary), var(--pink-primary))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14 }}>
-                    {v.name?.[0] || 'V'}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 14, fontWeight: 700 }}>{v.name || 'Unknown Mentor'}</div>
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{v.expertise?.[0] || 'General Support'}</div>
+                {console.log(volunteers)}
+                {volunteers.slice(0, 5).map(v => {
+                  if (!v.name) return null; // Skip volunteers without names
+                  return (
+                    <div key={v._id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: 12 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, var(--purple-primary), var(--pink-primary))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14 }}>
+                        {v.name?.[0] || 'V'}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 14, fontWeight: 700 }}>{v.name || 'Unknown Mentor'}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{v.expertise?.[0] || 'General Support'}</div>
+                      </div>
+                      <div style={{ fontSize: 11, padding: '4px 8px', borderRadius: 99, background: v.isAvailable ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', color: v.isAvailable ? '#10B981' : '#EF4444', fontWeight: 600 }}>
+                        {v.isAvailable ? 'Available' : 'Offline'}
+                      </div>
                     </div>
-                    <div style={{ fontSize: 11, padding: '4px 8px', borderRadius: 99, background: v.isAvailable ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', color: v.isAvailable ? '#10B981' : '#EF4444', fontWeight: 600 }}>
-                      {v.isAvailable ? 'Available' : 'Offline'}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
                 {volunteers.length === 0 && (
                   <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)' }}>No volunteers yet.</div>
                 )}
@@ -165,24 +169,27 @@ export default function NGODashboard() {
                     <tr>
                       <td colSpan={4} style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}>No volunteers found in the database.</td>
                     </tr>
-                  ) : volunteers.map(v => (
-                    <tr key={v._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                      <td style={{ padding: '16px', fontWeight: 600 }}>{v.name || 'Unknown Mentor'}</td>
-                      <td style={{ padding: '16px', color: 'var(--text-secondary)' }}>{v.email || 'No email'}</td>
-                      <td style={{ padding: '16px', color: 'var(--text-secondary)', fontSize: 13 }}>
-                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                          {(v.expertise || []).map(exp => (
-                            <span key={exp} style={{ background: 'rgba(255,255,255,0.05)', padding: '4px 8px', borderRadius: 6, border: '1px solid var(--border)' }}>{exp}</span>
-                          ))}
-                        </div>
-                      </td>
-                      <td style={{ padding: '16px' }}>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: v.isAvailable ? '#10B981' : '#EF4444' }}>
-                          ● {v.isAvailable ? 'Ready for sessions' : 'Offline / Busy'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                  ) : volunteers.map(v => {
+                    if (!v.name) return null; // Skip volunteers without names
+                    return (
+                      <tr key={v._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                        <td style={{ padding: '16px', fontWeight: 600 }}>{v.name || 'Unknown Mentor'}</td>
+                        <td style={{ padding: '16px', color: 'var(--text-secondary)' }}>{v.email || 'No email'}</td>
+                        <td style={{ padding: '16px', color: 'var(--text-secondary)', fontSize: 13 }}>
+                          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                            {(v.expertise || []).map(exp => (
+                              <span key={exp} style={{ background: 'rgba(255,255,255,0.05)', padding: '4px 8px', borderRadius: 6, border: '1px solid var(--border)' }}>{exp}</span>
+                            ))}
+                          </div>
+                        </td>
+                        <td style={{ padding: '16px' }}>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: v.isAvailable ? '#10B981' : '#EF4444' }}>
+                            ● {v.isAvailable ? 'Ready for sessions' : 'Offline / Busy'}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

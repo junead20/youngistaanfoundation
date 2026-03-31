@@ -9,15 +9,18 @@ import {
 
 const NAV_ITEMS = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', role: 'user' },
-  { path: '/volunteer-dashboard', icon: Shield, label: 'Volunteer Panel', role: 'volunteer' },
+  { path: '/chat', icon: MessageCircle, label: 'AI Chat', isPublic: true },
+  { path: '/community', icon: Globe, label: 'Community', role: 'user' },
+  { path: '/mentor-chat', icon: Users, label: 'Talk to Mentor', role: 'user' },
   { path: '/mentee-analysis', icon: Activity, label: 'Mentee Analysis', role: 'volunteer' },
   { path: '/volunteer-directory', icon: Users, label: 'Co-Volunteers', role: 'volunteer' },
-  { path: '/ngo-dashboard', icon: Building2, label: 'NGO Dashboard', role: 'ngo' },
+  { path: '/volunteer-dashboard', icon: Shield, label: 'Volunteer Panel', role: 'volunteer' },
   { path: '/community', icon: Globe, label: 'Community', role: 'volunteer' },
-  { path: '/chat', icon: MessageCircle, label: 'AI Chat', isPublic: true },
+  { path: '/ngo-dashboard', icon: Building2, label: 'NGO Dashboard', role: 'ngo' },
+  { path: '/volunteer-dashboard', icon: Shield, label: 'Volunteer Panel', role: 'ngo' },
+  { path: '/mentee-analysis', icon: Activity, label: 'Mentee Analysis', role: 'ngo' },
   { path: '/stress-relief', icon: Wind, label: 'Stress Relief', isPublic: true },
   { path: '/mood', icon: Heart, label: 'Mood Tracker', isPublic: true },
-  { path: '/mentor-chat', icon: Users, label: 'Talk to Mentor', role: 'user' },
   { path: '/ngo', icon: Building2, label: 'NGO Directory' },
 ];
 
@@ -32,7 +35,7 @@ export default function Sidebar() {
   };
 
   const handleCopyId = () => {
-    navigator.clipboard.writeText(user?.userId || '').catch(() => {});
+    navigator.clipboard.writeText(user?.userId || '').catch(() => { });
     setIdCopied(true);
     setTimeout(() => setIdCopied(false), 2000);
   };

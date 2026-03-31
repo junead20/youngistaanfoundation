@@ -3,12 +3,12 @@ import { useApp } from '../context/AppContext';
 import Sidebar from '../components/Sidebar';
 import axios from 'axios';
 import {
-  Users, Bell, AlertTriangle, MessageCircle, 
+  Users, Bell, AlertTriangle, MessageCircle,
   History, Send, Shield, ChevronDown, CheckCircle, Clock,
   Activity, User, Calendar, TrendingUp
 } from 'lucide-react';
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, 
+  LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, ReferenceLine, AreaChart, Area
 } from 'recharts';
 
@@ -65,7 +65,7 @@ export default function MenteeAnalysis() {
     <div className="app-layout">
       <Sidebar />
       <main className="main-content" style={{ padding: 0, overflow: 'hidden', height: '100vh', display: 'flex', flexDirection: 'column' }}>
-        
+
         {/* Persistent Sub-Header */}
         <header className="glass" style={{ flexShrink: 0, height: 70, borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', zIndex: 10, backdropFilter: 'blur(20px)', borderRadius: 0, borderTop: 'none', borderLeft: 'none' }}>
           <div>
@@ -82,7 +82,7 @@ export default function MenteeAnalysis() {
 
         {/* Scaled Content Area */}
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden', background: 'rgba(255,255,255,0.02)' }}>
-          
+
           {/* Left Panel: Mentee List (Fixed height scrollable) */}
           <aside style={{ width: 320, borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', background: 'rgba(255,255,255,0.2)' }}>
             <div style={{ padding: '24px 20px 12px 20px' }}>
@@ -90,6 +90,7 @@ export default function MenteeAnalysis() {
             </div>
             <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px 24px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
               {mentees.map(m => {
+                if (!m.latestMood || !m.userId) return null; // Skip if no mood data available
                 const active = selectedMentee?.userId === m.userId;
                 const risk = m.latestMood?.stressLevel >= 7;
                 return (
@@ -122,7 +123,7 @@ export default function MenteeAnalysis() {
           <section style={{ flex: 1, overflowY: 'auto', padding: 32 }}>
             {selectedMentee ? (
               <div style={{ maxWidth: 1000, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }} className="animate-fade-up">
-                
+
                 {/* 1. Profile Header Strip */}
                 <div className="glass" style={{ padding: '24px 32px', borderRadius: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
@@ -135,7 +136,7 @@ export default function MenteeAnalysis() {
                       <Calendar size={14} /> Registered {selectedMentee?.createdAt ? new Date(selectedMentee.createdAt).toLocaleDateString() : 'Today'}
                     </div>
                   </div>
-                  
+
                   <div style={{ display: 'flex', gap: 12 }}>
                     <div className="glass" style={{ padding: '10px 20px', borderRadius: 16, background: isAtRisk ? 'rgba(239, 68, 68, 0.05)' : 'rgba(16, 185, 129, 0.05)', border: `1px solid ${isAtRisk ? '#EF4444' : '#10B981'}`, textAlign: 'center' }}>
                       <div style={{ fontSize: 10, fontWeight: 800, color: isAtRisk ? '#EF4444' : '#10B981', textTransform: 'uppercase', marginBottom: 2 }}>Risk Assessment</div>
@@ -171,15 +172,15 @@ export default function MenteeAnalysis() {
                       <AreaChart data={moodHistory}>
                         <defs>
                           <linearGradient id="moodGradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="var(--purple-primary)" stopOpacity={0.3}/>
-                            <stop offset="95%" stopColor="var(--purple-primary)" stopOpacity={0}/>
+                            <stop offset="5%" stopColor="var(--purple-primary)" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="var(--purple-primary)" stopOpacity={0} />
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.04)" />
                         <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
                         <YAxis hide domain={[0, 10]} />
-                        <Tooltip 
-                          contentStyle={{ borderRadius: 16, border: '1px solid var(--border)', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }} 
+                        <Tooltip
+                          contentStyle={{ borderRadius: 16, border: '1px solid var(--border)', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
                           itemStyle={{ color: 'var(--purple-primary)', fontWeight: 800 }}
                         />
                         <ReferenceLine y={4} stroke="#EF4444" strokeDasharray="5 5" />
@@ -197,17 +198,17 @@ export default function MenteeAnalysis() {
                       Intervention Guidelines
                     </h4>
                     <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: 0 }}>
-                      {isAtRisk 
-                        ? "Critical stress levels detected. Immediate reach-out is recommended. Review recent logs for specific triggers." 
+                      {isAtRisk
+                        ? "Critical stress levels detected. Immediate reach-out is recommended. Review recent logs for specific triggers."
                         : "Stability maintained. Regular weekly sessions are sufficient for this profile."}
                     </p>
                   </div>
                   <div style={{ display: 'flex', gap: 12 }}>
                     <button className="btn btn-primary" style={{ height: 52, padding: '0 24px', borderRadius: 16, fontSize: 15 }}>
-                       Start Conversation
+                      Start Conversation
                     </button>
                     <button className="btn btn-outline" style={{ height: 52, padding: '0 24px', borderRadius: 16, fontSize: 15 }}>
-                       History
+                      History
                     </button>
                   </div>
                 </div>
@@ -227,7 +228,8 @@ export default function MenteeAnalysis() {
         </div>
       </main>
 
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         .mentee-list-item:hover {
           background: rgba(255,255,255,0.5) !important;
           transform: translateX(4px);
