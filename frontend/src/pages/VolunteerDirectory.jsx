@@ -27,8 +27,8 @@ export default function VolunteerDirectory() {
   }, [volunteer]);
 
   const handleConnect = (v) => {
-    const subject = encodeURIComponent("YuvaPulse: Connection Request from Fellow Mentor");
-    const body = encodeURIComponent(`Hi ${v.name},\n\nI'm ${volunteer?.name}, a fellow mentor on the YuvaPulse platform. I saw your profile in the directory and would love to connect and share insights on our mentoring experiences!\n\nBest regards,\n${volunteer?.name}`);
+    const subject = encodeURIComponent("Manobhandhu AI: Connection Request from Fellow Mentor");
+    const body = encodeURIComponent(`Hi ${v.name},\n\nI'm ${volunteer?.name}, a fellow mentor on the Manobhandhu AI platform. I saw your profile in the directory and would love to connect and share insights on our mentoring experiences!\n\nBest regards,\n${volunteer?.name}`);
     window.location.href = `mailto:${v.email}?subject=${subject}&body=${body}`;
   };
 

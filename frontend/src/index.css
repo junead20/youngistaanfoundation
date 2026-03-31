@@ -3,26 +3,20 @@
 
 /* ===== CSS Variables ===== */
 :root {
-  --bg-primary: #f7f4ee;
-  --bg-secondary: #efe8dc;
-  --bg-card: rgba(255, 255, 255, 0.78);
-  --bg-card-hover: rgba(255, 255, 255, 0.9);
-  --border: rgba(70, 60, 52, 0.12);
-  --border-hover: rgba(70, 60, 52, 0.2);
+  --bg-primary: #f9f9fb;
+  --bg-secondary: #eceef1;
+  --bg-card: rgba(255, 255, 255, 0.85);
 
-  --purple-primary: #c7b6f0;
-  --purple-light: #dcd0fa;
-  --purple-glow: rgba(199, 182, 240, 0.35);
-  --teal-primary: #9cc6b3;
-  --teal-light: #c5e0d3;
-  --pink-primary: #e6b8a2;
-  --green-primary: #a7c8a1;
-  --yellow-primary: #e7cba9;
-  --red-primary: #f0b7b7;
+  --primary-pulse: #9BA8F5;
+  --secondary-pulse: #F8C8DC;
+  --tertiary-pulse: #D1E8E2;
 
-  --text-primary: #2f2a28;
-  --text-secondary: #5b524a;
-  --text-muted: #7d7168;
+  --purple-primary: #9BA8F5;
+  --teal-primary: #D1E8E2;
+  --pink-primary: #F8C8DC;
+  --text-primary: #02145c;
+  --text-secondary: #5b6063;
+  --text-muted: #777b7f;
 
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -143,9 +137,18 @@ h6 {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--purple-primary), var(--pink-primary));
-  color: #2f2a28;
-  box-shadow: 0 4px 18px rgba(57, 45, 37, 0.16);
+  background: linear-gradient(135deg, var(--primary-pulse), var(--secondary-pulse));
+  color: #faf8ff;
+  box-shadow: 0 4px 18px rgba(77, 90, 161, 0.16);
+}
+
+.liquid-target {
+  filter: url(#liquid-distort);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.liquid-target:hover {
+  transform: scale(1.02);
 }
 
 .btn-primary:hover {
