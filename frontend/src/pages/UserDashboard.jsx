@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, Calendar, Star, Activity, Clock, Cookie } from 'lucide-react';
+import { MessageSquare, Calendar, Star, Activity, Clock, Cookie, Wind, Users } from 'lucide-react';
 
 const scoreToEmoji = (score) => {
   if (score <= 2) return '😢';
@@ -59,6 +59,9 @@ export default function UserDashboard() {
            <p style={{ margin: '8px 0 0', color: 'var(--text-tertiary)', fontSize: 13 }}>Your journey matters. One small step at a time.</p>
         </div>
         <div style={{ display: 'flex', gap: 12 }}>
+           <button className="btn btn-sm" style={{ background: 'var(--palette-mint)', color: '#000', border: 'none', fontWeight: 600 }} onClick={() => navigate('/breathe')}>
+              <Wind size={16} style={{ marginRight: 6 }} /> Breathe Zone
+           </button>
            <button className="btn btn-secondary btn-sm" onClick={() => navigate('/milo')}>
               <MessageSquare size={16} style={{ marginRight: 6 }} /> Chat with Milo
            </button>
@@ -157,16 +160,40 @@ export default function UserDashboard() {
         </div>
       </div>
 
-      {/* QUICK STATUS CARD */}
-      <div className="card" style={{ marginTop: 32, background: 'linear-gradient(135deg, var(--primary-light), var(--bg-secondary))', padding: 32 }}>
-         <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
-            <div style={{ fontSize: 48 }}>💡</div>
-            <div>
-               <h3 style={{ margin: 0, color: 'var(--primary-dark)' }}>Did you know?</h3>
-               <p style={{ margin: '8px 0 0', color: 'var(--text-secondary)', maxWidth: 600 }}>
-                  Taking just 10 minutes for yourself today can improve your focus by 30%. 
-                  Pick an activity from your Daily 3 and give it a try.
-               </p>
+      {/* PREDEFINED COMMUNITIES AND QUICK STATUS CARD */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32, marginTop: 32 }}>
+         <div className="card">
+            <h3 className="card-title" style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
+               <Users size={18} color="var(--palette-purple)" /> Your Support Circles
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+               <div className="observation-card" style={{ background: 'var(--bg-glass)', border: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/communities')}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                     <h4 style={{ margin: 0 }}>Exam Stress Haven</h4>
+                     <span className="badge" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}>28 Online</span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: 13, color: 'var(--text-tertiary)' }}>A safe space to vent about school pressure.</p>
+               </div>
+               <div className="observation-card" style={{ background: 'var(--bg-glass)', border: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/communities')}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                     <h4 style={{ margin: 0 }}>Late Night Thinkers</h4>
+                     <span className="badge" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}>42 Online</span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: 13, color: 'var(--text-tertiary)' }}>For when you can't sleep and need comfort.</p>
+               </div>
+            </div>
+         </div>
+
+         <div className="card" style={{ background: 'linear-gradient(135deg, var(--primary-light), var(--bg-secondary))', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
+               <div style={{ fontSize: 48 }}>💡</div>
+               <div>
+                  <h3 style={{ margin: 0, color: 'var(--primary-dark)' }}>Did you know?</h3>
+                  <p style={{ margin: '8px 0 0', color: 'var(--text-secondary)' }}>
+                     Taking just 10 minutes for yourself today can improve your focus by 30%. 
+                     Pick an activity from your Daily 3 and give it a try.
+                  </p>
+               </div>
             </div>
          </div>
       </div>

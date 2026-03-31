@@ -11,6 +11,7 @@ import VolunteerDashboard from './pages/VolunteerDashboard';
 import UserDetailView from './pages/UserDetailView';
 import Communities from './pages/Communities';
 import Milo from './pages/Milo';
+import BreatheZone from './pages/BreatheZone';
 import Layout from './components/Layout';
 import './index.css';
 
@@ -30,6 +31,7 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/mood-check" element={<MoodCheck />} />
         <Route path="/activities" element={<Activities />} />
+        <Route path="/breathe" element={<BreatheZone />} />
 
         {/* AUTH PAGES */}
         <Route path="/login" element={<UserLogin />} />

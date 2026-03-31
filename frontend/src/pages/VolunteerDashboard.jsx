@@ -13,7 +13,7 @@ export default function VolunteerDashboard() {
     const fetchEntries = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('/api/volunteers', { headers: { 'Authorization': `Bearer ${token}` } });
+        const res = await fetch('/api/volunteers/live-users', { headers: { 'Authorization': `Bearer ${token}` } });
         const data = await res.json();
         setEntries(data);
       } catch (err) {
@@ -56,14 +56,11 @@ export default function VolunteerDashboard() {
             </tr>
           </thead>
           <tbody>
-            {[
-              { id: 'AF32', mood: '📉', risk: 'Priority Connect', time: '2m ago', color: 'critical' },
-              { id: 'BG89', mood: '📈', risk: 'Low', time: '15m ago', color: 'low' },
-              { id: 'CX12', mood: '➖', risk: 'Moderate', time: '1h ago', color: 'yellow' },
-              { id: 'DY45', mood: '📈', risk: 'Low', time: '3h ago', color: 'low' },
-            ].map((u, i) => (
+            {loading ? <tr><td colSpan="5" style={{textAlign:'center', padding:20}}>Loading active users...</td></tr> : 
+             entries.length === 0 ? <tr><td colSpan="5" style={{textAlign:'center', padding:20}}>No active priority users tracked today.</td></tr> :
+             entries.map((u, i) => (
               <tr key={i}>
-                <td style={{ fontWeight: 700, color: 'var(--palette-purple)' }}>User #{u.id}</td>
+                <td style={{ fontWeight: 700, color: 'var(--palette-purple)' }}>{u.name} (<span style={{opacity:0.6}}>{u.id.substring(u.id.length - 4)}</span>)</td>
                 <td style={{ fontSize: 18 }}>{u.mood}</td>
                 <td><span className={`badge ${u.color}`}>{u.risk}</span></td>
                 <td style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>{u.time}</td>
@@ -83,15 +80,15 @@ export default function VolunteerDashboard() {
 
       <div className="volunteer-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', marginTop: 40 }}>
          <div className="card" style={{ textAlign: 'center' }}>
-            <h3 style={{ margin: 0 }}>84</h3>
-            <p style={{ margin: 0, fontSize: 13, color: 'var(--text-tertiary)' }}>Active Connections</p>
+            <h3 style={{ margin: 0 }}>{entries.length}</h3>
+            <p style={{ margin: 0, fontSize: 13, color: 'var(--text-tertiary)' }}>Active Tracked Users</p>
          </div>
          <div className="card" style={{ textAlign: 'center' }}>
-            <h3 style={{ margin: 0 }}>12</h3>
+            <h3 style={{ margin: 0 }}>{entries.filter(e => e.color === 'critical').length}</h3>
             <p style={{ margin: 0, fontSize: 13, color: 'var(--text-tertiary)' }}>Priority Follow-ups</p>
          </div>
          <div className="card" style={{ textAlign: 'center' }}>
-            <h3 style={{ margin: 0 }}>9.2</h3>
+            <h3 style={{ margin: 0 }}>{entries.length ? (entries.reduce((a,b)=>a+b.latestScore, 0)/entries.length).toFixed(1) : 'N/A'}</h3>
             <p style={{ margin: 0, fontSize: 13, color: 'var(--text-tertiary)' }}>Safety Metric Avg</p>
          </div>
       </div>

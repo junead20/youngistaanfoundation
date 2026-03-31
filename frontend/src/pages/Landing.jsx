@@ -21,6 +21,10 @@ export default function Landing() {
         <div className="nav-links">
           <button className="nav-link" onClick={scrollToInfo}>About</button>
           <button className="nav-link" onClick={() => navigate('/activities')}>Fun Activities</button>
+          <div style={{ width: 1, height: 24, background: 'var(--border)', margin: '0 8px' }} />
+          <button className="nav-link" style={{ fontWeight: 600 }} onClick={() => navigate('/login')}>Log In</button>
+          <button className="nav-link" style={{ fontWeight: 600, color: 'var(--primary)' }} onClick={() => navigate('/signup')}>Sign Up</button>
+          <div style={{ width: 1, height: 24, background: 'var(--border)', margin: '0 8px' }} />
           <button className="btn btn-secondary btn-sm" onClick={() => navigate('/volunteer/login')}>
             Volunteer Portal
           </button>

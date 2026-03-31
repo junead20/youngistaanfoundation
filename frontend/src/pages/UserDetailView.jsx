@@ -10,10 +10,26 @@ export default function UserDetailView() {
   const [toast, setToast] = useState('');
   const [resolved, setResolved] = useState(false);
 
+  const [userData, setUserData] = useState(null);
+  const [chats, setChats] = useState([]);
+
   useEffect(() => {
-    // Simulating data fetch
-    setTimeout(() => setLoading(false), 800);
-  }, []);
+    const fetchUserData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`/api/volunteers/user-chat/${id}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        setUserData(data.user);
+        setChats(data.recentChats);
+      } catch (err) {
+        console.error(err);
+      }
+      setLoading(false);
+    };
+    fetchUserData();
+  }, [id]);
 
   if (loading) {
     return (
@@ -48,15 +64,15 @@ export default function UserDetailView() {
       <div className="page-header" style={{ marginBottom: 40, display: 'flex', gap: 24, alignItems: 'flex-start' }}>
          <div style={{ background: 'var(--bg-tertiary)', width: 64, height: 64, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border-active)', fontSize: 24 }}>👤</div>
          <div>
-            <h1 style={{ margin: 0 }}>Anonymized User #{id}</h1>
+            <h1 style={{ margin: 0 }}>User: {userData?.name} (<span style={{opacity:0.6}}>{id.substring(id.length - 4)}</span>)</h1>
             <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
                {resolved ? (
                   <span className="badge success">STATUS: SAFELY RESOLVED</span>
                ) : (
                   <span className="badge critical">RISK: PRIORITY CONNECT</span>
                )}
-               <span className="badge yellow">MOOD: 3/10</span>
-               <span className="badge low">AGE: 13-19</span>
+               <span className="badge yellow">MOOD: {userData?.mood_history?.[userData.mood_history.length - 1]?.score || 'N/A'}/10</span>
+               <span className="badge low">AGE: {userData?.age_group || '13-19'}</span>
             </div>
          </div>
          <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
@@ -85,19 +101,16 @@ export default function UserDetailView() {
             </h3>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-               <div className="observation-card" style={{ background: 'var(--bg-glass)', border: 'none', maxWidth: '80%' }}>
-                  <p style={{ fontSize: 13, margin: '8px 0 0' }}><b>Milo:</b> "Hey! I'm here. How can I help today?"</p>
-               </div>
-               <div className="observation-card" style={{ background: 'var(--bg-tertiary)', border: 'none', alignSelf: 'flex-end', maxWidth: '80%' }}>
-                  <p style={{ fontSize: 13, margin: '8px 0 0' }}><b>User:</b> "Feeling really overwhelmed by the final exams next week..."</p>
-               </div>
-               <div className="observation-card" style={{ background: 'var(--bg-glass)', border: 'none', maxWidth: '80%' }}>
-                  <p style={{ fontSize: 13, margin: '8px 0 0' }}><b>Milo:</b> "I hear you. Exams can be tough. What's one small thing we can tackle?"</p>
-               </div>
-               <div className="observation-card" style={{ background: 'var(--bg-tertiary)', border: 'none', alignSelf: 'flex-end', maxWidth: '80%' }}>
-                  <p style={{ fontSize: 13, margin: '8px 0 0' }}><b>User:</b> "I don't know, everything feels too much right now."</p>
-               </div>
-               <div style={{ textAlign: 'center', opacity: 0.3, fontSize: 11, fontStyle: 'italic', margin: '20px 0' }}>--- Session ID: anon_j9x2k ---</div>
+               {chats.length === 0 ? (
+                 <div style={{ textAlign: 'center', opacity: 0.6, padding: '20px' }}>No chat history found for this user.</div>
+               ) : (
+                 chats[0].conversation.map((msg, i) => (
+                   <div key={i} className="observation-card" style={{ background: msg.is_milo ? 'var(--bg-glass)' : 'var(--bg-tertiary)', border: 'none', alignSelf: msg.is_milo ? 'flex-start' : 'flex-end', maxWidth: '80%' }}>
+                      <p style={{ fontSize: 13, margin: '8px 0 0' }}><b>{msg.is_milo ? 'Milo' : 'User'}:</b> "{msg.text}"</p>
+                   </div>
+                 ))
+               )}
+               <div style={{ textAlign: 'center', opacity: 0.3, fontSize: 11, fontStyle: 'italic', margin: '20px 0' }}>--- Session ID: {chats[0]?._id || 'N/A'} ---</div>
             </div>
             
             <div style={{ marginTop: 24, padding: '16px 0 0', borderTop: '1px solid var(--border)', fontSize: 11, color: 'var(--text-tertiary)' }}>
@@ -112,11 +125,11 @@ export default function UserDetailView() {
             </h3>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-               <div className="card" style={{ background: 'rgba(255, 155, 189, 0.05)', border: '1px solid var(--danger)', padding: 16 }}>
-                  <p style={{ fontSize: 12, margin: 0 }}>Mood Score reported: <b>3/10</b></p>
+               <div className="card" style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)', padding: 16 }}>
+                  <p style={{ fontSize: 12, margin: 0 }}>Latest Mood reported: <b>{userData?.mood_history?.[userData.mood_history.length - 1]?.score || 'N/A'}/10</b></p>
                </div>
                <div className="card" style={{ background: 'var(--bg-glass)', border: '1px solid var(--border-active)', padding: 16 }}>
-                  <p style={{ fontSize: 12, margin: 0 }}>Trigger: <b>Severe academic pressure</b> detected by Milo.</p>
+                  <p style={{ fontSize: 12, margin: 0 }}>Trigger Log: <b>{userData?.mood_history?.[userData.mood_history.length - 1]?.description || 'No triggers identified'}</b></p>
                </div>
                
                <div style={{ marginTop: 32 }}>

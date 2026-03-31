@@ -273,9 +273,14 @@ export default function Activities() {
     ? []
     : apiActivities.filter(a => a.category === filter);
 
-  const filteredGames = filter === 'All' || filter === 'Games' || filter === 'Mindful' || filter === 'Creative'
+  const todaySeed = new Date().getDate();
+  const filteredGames = (filter === 'All' || filter === 'Games' || filter === 'Mindful' || filter === 'Creative'
     ? GAMES.filter(g => filter === 'All' || filter === 'Games' || g.category === filter)
-    : [];
+    : []).sort((a, b) => {
+       const hashA = a.id.charCodeAt(0) * todaySeed;
+       const hashB = b.id.charCodeAt(0) * todaySeed;
+       return (hashA % 3) - (hashB % 3);
+    });
 
   return (
     <div className="animate-fade-in" style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 40px 80px' }}>

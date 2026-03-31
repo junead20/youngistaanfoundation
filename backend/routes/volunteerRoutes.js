@@ -1,5 +1,7 @@
 import express from "express";
 import Volunteer from "../models/Volunteer.js";
+import User from "../models/User.js";
+import Chat from "../models/Chat.js";
 
 const router = express.Router();
 
@@ -100,5 +102,80 @@ function calculateOfflineSeverity(scores) {
   if (avg <= 6) return "medium";
   return "low";
 }
+
+// Get live users with recent mood history for Volunteer Dashboard
+router.get("/live-users", async (req, res) => {
+  try {
+    const users = await User.find({ "mood_history.0": { $exists: true } })
+                            .select("name email role age_group mood_history")
+                            .lean();
+
+    // Map users to extract their latest mood
+    const activeEntries = users.map(u => {
+      const latestMood = u.mood_history[u.mood_history.length - 1];
+      const timeDiffMs = Date.now() - new Date(latestMood.timestamp).getTime();
+      const minsAgo = Math.floor(timeDiffMs / 60000);
+      let timeStr = minsAgo < 60 ? `${minsAgo}m ago` : `${Math.floor(minsAgo / 60)}h ago`;
+
+      let riskLevel = 'Low';
+      let colorClass = 'low';
+      if (latestMood.score <= 3) {
+        riskLevel = 'Priority Connect';
+        colorClass = 'critical';
+      } else if (latestMood.score <= 5) {
+        riskLevel = 'Moderate';
+        colorClass = 'yellow';
+      }
+
+      // Convert score to simple trend emoji based on previous score if exists
+      let moodEmoji = '➖';
+      if (u.mood_history.length > 1) {
+        const prevScore = u.mood_history[u.mood_history.length - 2].score;
+        if (latestMood.score > prevScore) moodEmoji = '📈';
+        else if (latestMood.score < prevScore) moodEmoji = '📉';
+      }
+
+      return {
+        id: u._id,
+        name: u.name,
+        ageGroup: u.age_group,
+        mood: moodEmoji,
+        risk: riskLevel,
+        time: timeStr,
+        color: colorClass,
+        latestScore: latestMood.score
+      };
+    });
+
+    // Sort by most critical first, then timestamp
+    activeEntries.sort((a, b) => {
+      if (a.color === 'critical' && b.color !== 'critical') return -1;
+      if (a.color !== 'critical' && b.color === 'critical') return 1;
+      return a.latestScore - b.latestScore; // lower score first
+    });
+
+    res.json(activeEntries);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get specific user chat history
+router.get("/user-chat/:id", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select("-password").lean();
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const chats = await Chat.find({ user_id: req.params.id }).sort("-timestamp").lean();
+    
+    // Compile a unified detailed stat view for the volunteer
+    res.json({
+      user,
+      recentChats: chats
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 export default router;
